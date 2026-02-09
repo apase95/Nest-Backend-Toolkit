@@ -16,9 +16,9 @@ export class Session {
     userAgent: string;
 
     @Prop()
-    ip: string;
+    ipAddress: string;
 
-    @Prop({ type: Date, expires: '7d', default: Date.now })
+    @Prop({ type: Date, required: true, expires: 0 })
     expiredAt: Date;
 }
 

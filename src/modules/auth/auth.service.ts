@@ -1,6 +1,12 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
-import { SessionService } from "src/modules/session/session.service";
-import * as bcrypt from 'bcrypt';
+import { Injectable, UnauthorizedException, ForbiddenException, BadRequestException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import * as bcrypt from "bcrypt";
+import { Types } from "mongoose";
+
+import { UserService } from "../user/user.service";
+import { SessionService } from "../session/session.service";
+import { LoginDto, RegisterDto } from "./dto/auth.dto";
 
 
 @Injectable()
@@ -20,52 +26,68 @@ export class AuthService {
     async login(
         loginDto: LoginDto,
         userAgent: string, 
-        ip: string,
+        ipAddress: string,
     ) {
         const user = await this.userService.findByEmail(loginDto.email);
-        if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-            throw new UnauthorizedException("Invalid credentials");
-        }
-        return this.generateAuthResponse(user, userAgent, ip);
+        if (!user) throw new UnauthorizedException('Invalid credentials');
+        if (user.isDeleted) throw new ForbiddenException('Account has been deleted');
+        if (user.isLocked) throw new ForbiddenException('Account has been locked');
+
+        const isMatch = await bcrypt.compare(loginDto.password, user.password);
+        if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+
+        return this.generateAuthResponse(user, userAgent, ipAddress);
     };
 
     async refreshToken(
-        oldRefreshToken: string, 
+        inComingRefreshToken: string, 
         userAgent: string, 
-        ip: string,
+        ipAddress: string,
     ) {
+        let payload;
         try {
-            this.jwtService.verify(oldRefreshToken, {
-                secret: this.configService.get("JWT_REFRESH_TOKEN"),
+            payload = this.jwtService.verify(inComingRefreshToken, {
+                secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
             });
         } catch (error) {
-            throw new UnauthorizedException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
-        const session = await this.sessionService.findSessionByToken(oldRefreshToken);
-        if (!session) throw new ForbiddenException("Session expired or revoked");
+        const { userId, sessionId } = payload;
+
+        const session = await this.sessionService.findSessionById(sessionId);
+        if (!session) throw new ForbiddenException("Refresh token has been revoked or invalid");
+        if (session.refreshToken !== inComingRefreshToken) {
+            await this.sessionService.revokeAllSessions(userId);
+            console.warn(`Token reuse detected for user ${userId}. All sessions revoked`);
+            throw new ForbiddenException("Token reuse detected. Please login again");
+        }
 
         const user = await this.userService.findById(session.userId.toString());
-        const tokens = await this.generateToken(user);
+        const tokens = await this.generateTokens(user, session._id.toString());
         
         await this.sessionService.updateSessionToken(session._id, tokens.refreshToken);
-        return tokens;
+        return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
     };
 
-    async logout(refreshToken) {
-        await this.sessionService.deleteSession(refreshToken);
+    async logout(refreshToken: string) {
+        if (!refreshToken) return;
+        try {
+            await this.sessionService.deleteSession(refreshToken);
+        } catch (e) {
+        }
     };
 
-    private async generateTokens(user: any) {
-        const payload = { sub: user._id, role: user.role };
+    private async generateTokens(user: any, sessionId: string) {
+        const payload = { sub: user._id, role: user.role, sessionId };
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
-                secret: this.configService.get('JWT_ACCESS_SECRET'),
-                expiresIn: this.configService.get('JWT_ACCESS_EXPIRATION'),
+                secret: this.configService.get("JWT_ACCESS_SECRET"),
+                expiresIn: this.configService.get("JWT_ACCESS_EXPIRATION"),
             }),
             this.jwtService.signAsync(payload, {
-                secret: this.configService.get('JWT_REFRESH_SECRET'),
-                expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION'),
+                secret: this.configService.get("JWT_REFRESH_SECRET"),
+                expiresIn: this.configService.get("JWT_REFRESH_EXPIRATION"),
             }),
         ]);
 
@@ -74,14 +96,25 @@ export class AuthService {
 
     private async generateAuthResponse(
         user: any, 
-        userAgent = '', 
-        ip = ''
+        userAgent = "", 
+        ipAddress = ""
     ) {
-        const tokens = await this.generateTokens(user);
+        const sessionId = new Types.ObjectId();
+        const tokens = await this.generateTokens(user, sessionId.toString());
         
-        await this.sessionService.createSession(user._id, tokens.refreshToken, userAgent, ip);
+        await this.sessionService.createSession(
+            user._id, 
+            tokens.refreshToken, 
+            userAgent, 
+            ipAddress
+        );
         return {
-            user: { id: user._id, email: user.email, role: user.role },
+            user: {
+                _id: user._id,
+                email: user.email,
+                displayName: user.displayName,
+                role: user.role
+            },
             ...tokens,
         };
     };
