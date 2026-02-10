@@ -33,7 +33,7 @@ export class UserService {
     async findById(
         id: string,
     ): Promise<UserDocument> {
-        const user = await this.userModel.findById(id).where({ isDelete: false });
+        const user = await this.userModel.findById(id).where({ isDeleted: false });
         if (!user) throw new NotFoundException("User not found");
         return user;
     };
@@ -41,7 +41,7 @@ export class UserService {
     async validateUserForAuth(
         email: string
     ): Promise<UserDocument | null> {
-        return this.userModel.findOne({ email }).select("+password +isLocked +isDelete +role");
+        return this.userModel.findOne({ email }).select("+password +isLocked +isDeleted +role");
     };
 };
 

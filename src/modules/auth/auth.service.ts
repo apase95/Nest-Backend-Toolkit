@@ -27,7 +27,7 @@ export class AuthService {
         userAgent: string, 
         ipAddress: string,
     ) {
-        const user = await this.userService.findByEmail(loginDto.email);
+        const user = await this.userService.validateUserForAuth(loginDto.email);
         if (!user) throw new UnauthorizedException('Invalid credentials');
         if (user.isDeleted) throw new ForbiddenException('Account has been deleted');
         if (user.isLocked) throw new ForbiddenException('Account has been locked');
@@ -52,7 +52,7 @@ export class AuthService {
             throw new UnauthorizedException("Invalid or expired refresh token");
         }
 
-        const { userId, sessionId } = payload;
+        const { sub: userId, sessionId } = payload;
 
         const session = await this.sessionService.findSessionById(sessionId);
         if (!session) throw new ForbiddenException("Refresh token has been revoked or invalid");
@@ -105,7 +105,8 @@ export class AuthService {
             user._id, 
             tokens.refreshToken, 
             userAgent, 
-            ipAddress
+            ipAddress,
+            sessionId,
         );
         return {
             user: {

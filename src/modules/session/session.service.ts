@@ -15,14 +15,16 @@ export class SessionService {
 
     async createSession(
         userId: Types.ObjectId, 
-        refreshToken: string, 
-        userAgent?: string, 
-        ipAddress?: string
+        refreshToken: string,
+        userAgent?: string,
+        ipAddress?: string,
+        sessionId?: Types.ObjectId,
     ): Promise<SessionDocument> {
         const refreshExpiresIn = this.configService.get<string>("JWT_REFRESH_EXPIRATION", "7d"); 
         const expireAt = new Date(Date.now() + ms(refreshExpiresIn as StringValue));
 
         return this.sessionModel.create({
+            _id: sessionId,
             userId, 
             refreshToken,
             userAgent,
