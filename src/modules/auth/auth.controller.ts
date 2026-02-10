@@ -7,11 +7,14 @@ import {
     HttpCode,
     HttpStatus,
     UnauthorizedException,
+    Get,
+    UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { ConfigService } from "@nestjs/config";
-import { LoginDto, RegisterDto } from "src/modules/auth/dto/auth.dto";
+import { AuthGuard } from "@nestjs/passport";
+import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto, VerifyEmailDto } from "src/modules/auth/dto/auth.dto";
 
 
 @Controller("auth")
@@ -81,5 +84,60 @@ export class AuthController {
 
         res.clearCookie("refreshToken", { ...this.getCookieOptions(), maxAge: 0 });
         return { message: "Logged out successfully" };
+    };
+
+    @Post("verify-email")
+    async verifyEmail(@Body() dto: VerifyEmailDto) {
+        return this.authService.verifyEmail(dto.token);
+    };
+
+    @Post("forgot-password")
+    async forgotPassword(@Body() dto: ForgotPasswordDto) {
+        return this.authService.forgotPassword(dto);
+    };
+
+    @Post("reset-password")
+    async resetPassword(@Body() dto: ResetPasswordDto) {
+        return this.authService.resetPassword(dto);
+    };
+
+    @Get("google")
+    @UseGuards(AuthGuard("google"))
+    async googleAuth() {};
+
+    @Get("linkedin")
+    @UseGuards(AuthGuard("linkedin"))
+    async linkedinAuth() {};
+
+    @Get("google/callback")
+    @UseGuards(AuthGuard("google"))
+    async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+        const data = await this.authService.handleSocialLogin(req.user, "google");
+        
+        res.cookie("refreshToken", data.refreshToken, {
+            httpOnly: true,
+            secure: this.configService.get("NODE_ENV") === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        return res.redirect(`${clientUrl}/oauth-success?token=${data.accessToken}`);
+    };
+
+    @Get("linkedin/callback")
+    @UseGuards(AuthGuard("linkedin"))
+    async linkedinAuthCallback(@Req() req: Request, @Res() res: Response) {
+        const data = await this.authService.handleSocialLogin(req.user, "linkedin");
+        
+        res.cookie("refreshToken", data.refreshToken, {
+            httpOnly: true,
+            secure: this.configService.get("NODE_ENV") === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        return res.redirect(`${clientUrl}/oauth-success?token=${data.accessToken}`);
     };
 }

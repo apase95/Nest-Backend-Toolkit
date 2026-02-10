@@ -1,11 +1,17 @@
 import { Injectable, UnauthorizedException, ForbiddenException, BadRequestException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
-import { Types } from "mongoose";
+import { Model, Types } from "mongoose";
 import { UserService } from "../user/user.service";
 import { SessionService } from "../session/session.service";
-import { LoginDto, RegisterDto } from "src/modules/auth/dto/auth.dto";
+import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto } from "src/modules/auth/dto/auth.dto";
+import { MailService } from "src/modules/mail/mail.service";
+import { EmailVerification } from "src/modules/auth/schemas/email-verification.schema";
+import { PasswordReset } from "src/modules/auth/schemas/password-reset.schema";
+import { UserRole } from "src/modules/user/schemas/user.schema";
+import { v4 as uuidv4 } from "uuid";
 
 
 @Injectable()
@@ -15,34 +21,60 @@ export class AuthService {
         private sessionService: SessionService,
         private jwtService: JwtService,
         private configService: ConfigService,
-    ){}
+        private mailService: MailService,
+        @InjectModel(EmailVerification.name)
+        private emailVerificationModel: Model<EmailVerification>,
+        @InjectModel(PasswordReset.name) private passwordResetModel: Model<PasswordReset>,
+    ) {}
 
     async register(registerDto: RegisterDto) {
         const newUser = await this.userService.create(registerDto);
+        await this.sendVerificationEmail(newUser);
         return this.generateAuthResponse(newUser);
     };
 
-    async login(
-        loginDto: LoginDto,
-        userAgent: string, 
-        ipAddress: string,
-    ) {
+    async login(loginDto: LoginDto, userAgent: string, ipAddress: string) {
         const user = await this.userService.validateUserForAuth(loginDto.email);
-        if (!user) throw new UnauthorizedException('Invalid credentials');
-        if (user.isDeleted) throw new ForbiddenException('Account has been deleted');
-        if (user.isLocked) throw new ForbiddenException('Account has been locked');
+        if (!user) throw new UnauthorizedException("Invalid credentials");
+        if (user.isDeleted) throw new ForbiddenException("Account has been deleted");
+        if (user.isLocked) throw new ForbiddenException("Account has been locked");
 
         const isMatch = await bcrypt.compare(loginDto.password, user.password);
-        if (!isMatch) throw new UnauthorizedException('Invalid credentials');
+        if (!isMatch) throw new UnauthorizedException("Invalid credentials");
 
         return this.generateAuthResponse(user, userAgent, ipAddress);
     };
 
-    async refreshToken(
-        inComingRefreshToken: string, 
-        userAgent: string, 
-        ipAddress: string,
-    ) {
+    async handleSocialLogin(profile: any, provider: "google" | "linkedin") {
+        let user = await this.userService.findByEmail(profile.email);
+
+        if (user) {
+            if (provider === "google" && !user.googleId) {
+                user.googleId = profile.providerId;
+                user.avatarURL = user.avatarURL || profile.picture;
+                await user.save();
+            } else if (provider === "linkedin" && !user.linkedinId) {
+                user.linkedinId = profile.providerId;
+                user.avatarURL = user.avatarURL || profile.picture;
+                await user.save();
+            }
+        } else {
+            const randomPassword = uuidv4();
+            user = await this.userService.create({
+                email: profile.email,
+                displayName: `${profile.firstName} ${profile.lastName}`,
+                password: randomPassword,
+                role: UserRole.USER,
+                isEmailVerified: true,
+                googleId: provider === "google" ? profile.providerId : null,
+                avatarURL: profile.picture,
+            } as any);
+        }
+
+        return this.generateAuthResponse(user);
+    };
+
+    async refreshToken(inComingRefreshToken: string, userAgent: string, ipAddress: string) {
         let payload;
         try {
             payload = this.jwtService.verify(inComingRefreshToken, {
@@ -64,7 +96,7 @@ export class AuthService {
 
         const user = await this.userService.findById(session.userId.toString());
         const tokens = await this.generateTokens(user, session._id.toString());
-        
+
         await this.sessionService.updateSessionToken(session._id, tokens.refreshToken);
         return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
     };
@@ -73,8 +105,7 @@ export class AuthService {
         if (!refreshToken) return;
         try {
             await this.sessionService.deleteSession(refreshToken);
-        } catch (e) {
-        }
+        } catch (e) {}
     };
 
     private async generateTokens(user: any, sessionId: string) {
@@ -93,18 +124,14 @@ export class AuthService {
         return { accessToken, refreshToken };
     };
 
-    private async generateAuthResponse(
-        user: any, 
-        userAgent = "", 
-        ipAddress = ""
-    ) {
+    private async generateAuthResponse(user: any, userAgent = "", ipAddress = "") {
         const sessionId = new Types.ObjectId();
         const tokens = await this.generateTokens(user, sessionId.toString());
-        
+
         await this.sessionService.createSession(
-            user._id, 
-            tokens.refreshToken, 
-            userAgent, 
+            user._id,
+            tokens.refreshToken,
+            userAgent,
             ipAddress,
             sessionId,
         );
@@ -113,9 +140,75 @@ export class AuthService {
                 _id: user._id,
                 email: user.email,
                 displayName: user.displayName,
-                role: user.role
+                role: user.role,
             },
             ...tokens,
         };
     };
-};
+
+    async sendVerificationEmail(user: any) {
+        const token = uuidv4();
+        await this.emailVerificationModel.create({ userId: user._id, token });
+
+        const clientUrl = this.configService.get<string>("CLIENT_URL");
+        const link = `${clientUrl}/verify-email?token=${token}`;
+
+        await this.mailService.sendEmail(
+            user.email,
+            "Verify Email",
+            `<a href="${link}">Click here to verify</a>`,
+        );
+    };
+
+    async verifyEmail(token: string) {
+        const record = await this.emailVerificationModel.findOne({ token });
+        if (!record) throw new BadRequestException("Invalid or expired token");
+
+        const user = await this.userService.findById(record.userId.toString());
+        if (user.isEmailVerified) throw new BadRequestException("Email already verified");
+
+        user.isEmailVerified = true;
+        
+        await user.save();
+        await this.emailVerificationModel.deleteOne({ _id: record._id });
+        return { message: "Email verified successfully" };
+    };
+
+    async forgotPassword(dto: ForgotPasswordDto) {
+        const user = await this.userService.findByEmail(dto.email);
+        if (!user) return;
+
+        if (user.googleId || user.linkedinId) {
+             throw new BadRequestException("Social accounts cannot reset password");
+        }
+
+        await this.passwordResetModel.deleteMany({ userId: user._id });
+
+        const token = uuidv4();
+        await this.passwordResetModel.create({ userId: user._id, token });
+
+        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        const link = `${clientUrl}/reset-password?token=${token}`;
+
+        await this.mailService.sendEmail(
+            user.email,
+            'Reset Password',
+            `<a href="${link}">Click here to reset password</a>`
+        );
+        return { message: "If email exists, reset link sent." };
+    };
+
+    async resetPassword(dto: ResetPasswordDto) {
+        const record = await this.passwordResetModel.findOne({ token: dto.token });
+        if (!record) throw new BadRequestException("Invalid or expired token");
+
+        const user = await this.userService.findById(record.userId.toString());
+        user.password = dto.password;
+
+        await user.save();
+        await this.passwordResetModel.deleteOne({ _id: record._id });
+        await this.sessionService.revokeAllSessions(user._id.toString());
+
+        return { message: "Password reset successfully" };
+    };
+}
