@@ -10,8 +10,8 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
-import { LoginDto, RegisterDto } from "./dto/auth.dto";
 import { ConfigService } from "@nestjs/config";
+import { LoginDto, RegisterDto } from "src/modules/auth/dto/auth.dto";
 
 
 @Controller("auth")

@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MongooseModule } from '@nestjs/mongoose';
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { MongooseModule } from "@nestjs/mongoose";
+import { AuthModule } from "./modules/auth/auth.module"; 
+import { SessionModule } from "./modules/session/session.module";
 import { UserModule } from './modules/user/user.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { SessionModule } from './modules/session/session.module';
 
 
 @Module({
@@ -19,9 +19,11 @@ import { SessionModule } from './modules/session/session.module';
             }),
             inject: [ConfigService],
         }),
+        UserModule,
+        AuthModule,
+        SessionModule,
     ],
-    UserModule,
-    AuthModule,
-    SessionModule,
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}

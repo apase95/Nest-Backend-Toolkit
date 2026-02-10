@@ -3,14 +3,14 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Session, SessionDocument } from "./schemas/session.schema";
-import * as ms from "ms";
+import ms, { StringValue } from "ms"; 
 
 
 @Injectable()
 export class SessionService {
     constructor(
         @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
-        private ConfigService: ConfigService
+        private configService: ConfigService
     ) {}
 
     async createSession(
@@ -19,8 +19,8 @@ export class SessionService {
         userAgent?: string, 
         ipAddress?: string
     ): Promise<SessionDocument> {
-        const refreshExpiresIn = this.ConfigService.get<string>("JWT_REFRESH_EXPIRATION");
-        const expireAt = new Date(Date.now() + ms(refreshExpiresIn));
+        const refreshExpiresIn = this.configService.get<string>("JWT_REFRESH_EXPIRATION", "7d"); 
+        const expireAt = new Date(Date.now() + ms(refreshExpiresIn as StringValue));
 
         return this.sessionModel.create({
             userId, 
@@ -36,7 +36,7 @@ export class SessionService {
     };
 
     async findSessionById(sessionId: string): Promise<SessionDocument | null>{
-        return this.sessionModel.findById({ sessionId }).exec();
+        return this.sessionModel.findById(sessionId).exec();
     };
 
     async updateSessionToken(
@@ -44,7 +44,7 @@ export class SessionService {
         newRefreshToken: string
     ): Promise<void>{
         const refreshExpiresIn = this.configService.get<string>("JWT_REFRESH_EXPIRATION", "7d");
-        const expireAt = new Date(Date.now() + ms(refreshExpiresIn));
+        const expireAt = new Date(Date.now() + ms(refreshExpiresIn as StringValue));
 
         await this.sessionModel.updateOne(
             { _id: sessionId },

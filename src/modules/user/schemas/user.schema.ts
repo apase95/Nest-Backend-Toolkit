@@ -17,50 +17,48 @@ export enum UserRole {
     toObject: { virtuals: true },
 })export class User {
     @Prop({ required: true, unique: true, lowercase: true, trim: true })
-    email: string;
+    email!: string;
 
     @Prop({ select: false })
-    password: string;
+    password!: string;
 
     @Prop({ required: true, trim: true })
-    displayName: string;
+    displayName!: string;
 
     @Prop({ default: '' })
-    firstName: string;
+    firstName?: string;
 
     @Prop({ default: '' })
-    lastName: string;
+    lastName?: string;
 
     @Prop({ sparse: true })
-    phoneNumber: string;
+    phoneNumber?: string;
 
     @Prop()
-    avatarURL: string;
+    avatarURL?: string;
 
     @Prop({ default: null, index: true })
-    googleId: string;
+    googleId?: string;
 
     @Prop({ default: null, index: true })
-    linkedinId: string;
+    linkedinId?: string;
 
     @Prop({ default: false })
-    isEmailVerified: boolean;
+    isEmailVerified!: boolean;
 
     @Prop({ default: false })
-    isLocked: boolean;
+    isLocked!: boolean;
 
     @Prop({ default: false, select: false })
-    isDeleted: boolean;
+    isDeleted!: boolean;
 
     @Prop({ type: String, enum: UserRole, default: UserRole.USER })
-    role: UserRole;
+    role!: UserRole;
 }
-
 export const UserSchema = SchemaFactory.createForClass(User);
 
 
-UserSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
+UserSchema.pre('save', async function () {
+    if (!this.isModified('password')) return ;
     this.password = await bcrypt.hash(this.password, 10);
-    next();
 });
