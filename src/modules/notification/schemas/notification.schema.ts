@@ -22,6 +22,9 @@ export class Notification {
     type!: NotificationType;
 
     @Prop({ required: true })
+    message!: string;
+
+    @Prop({ required: true })
     title!: string;
 
     @Prop({ default: false })

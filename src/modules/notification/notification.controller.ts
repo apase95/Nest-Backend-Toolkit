@@ -1,6 +1,7 @@
 import { NotificationService } from './notification.service';
-import { Controller, Delete, Get, Param, Patch, Query, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
+import { CreateNotificationDto } from 'src/modules/notification/dto/create-notification.dto';
 import { ListNotificationDto } from "src/modules/notification/dto/list-notification.dto";
 
 
@@ -9,6 +10,15 @@ import { ListNotificationDto } from "src/modules/notification/dto/list-notificat
 @UseGuards(JwtAuthGuard)
 export class NotificationController {
     constructor(private readonly notificationService: NotificationService) {}
+
+    @Post()
+    async createNotification(
+        @Req() req: any,
+        @Body() dto: CreateNotificationDto
+    ) {
+        dto.userId = req.user.userId;
+        return this.notificationService.send(dto);
+    };
 
     @Get()
     async getMyNotifications(

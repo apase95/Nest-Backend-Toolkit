@@ -1,5 +1,6 @@
-import { IsBooleanString, IsNumber, IsOptional, Min } from "class-validator";
+import { IsBooleanString, IsEnum, IsNumber, IsOptional, Min } from "class-validator";
 import { Type } from "class-transformer";
+import { NotificationType } from "src/modules/notification/schemas/notification.schema";
 
 
 export class ListNotificationDto {
@@ -18,4 +19,8 @@ export class ListNotificationDto {
     @IsOptional()
     @IsBooleanString()
     isRead?: string;
+
+    @IsOptional()
+    @IsEnum(NotificationType)
+    type?: NotificationType;
 };

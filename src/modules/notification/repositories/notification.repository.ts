@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { CreateNotificationDto } from "src/modules/notification/dto/create-notification.dto";
-import { Notification, NotificationDocument } from "../schemas/notification.schema";
+import { Notification, NotificationDocument, NotificationType } from "../schemas/notification.schema";
 
 
 @Injectable()
@@ -12,10 +12,14 @@ export class NotificationRepository {
     ) {}
 
     async create(data: CreateNotificationDto): Promise<NotificationDocument> {
-        return this.notificationModel.create({
-            ...data,
-            userId: new Types.ObjectId(data.userId),
-        });
+        try {
+            return this.notificationModel.create({
+                ...data,
+                userId: new Types.ObjectId(data.userId),
+            });    
+        } catch (error) {
+            throw new BadRequestException("Failed to create notification");
+        }
     };
 
     async findByUser(
@@ -23,13 +27,17 @@ export class NotificationRepository {
         skip: number,
         limit: number,
         isRead?: boolean,
+        type?: NotificationType
     ) {
         const filter: any = { userId: new Types.ObjectId(userId) };
         if (isRead !== undefined) filter.isRead = isRead;
+        if (type) filter.type = type;
 
         const [notifications, total, unreadCount] = await Promise.all([
             this.notificationModel
-                .find(filter).sort({ createdAt: -1 })
+                .find(filter)
+                // .populate("userId", "email")
+                .sort({ createdAt: -1 })
                 .skip(skip).limit(limit).exec(),
             this.notificationModel.countDocuments(filter).exec(),
             this.notificationModel.countDocuments({
