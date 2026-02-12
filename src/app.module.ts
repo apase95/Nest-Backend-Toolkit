@@ -4,6 +4,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { AuthModule } from "./modules/auth/auth.module"; 
 import { SessionModule } from "./modules/session/session.module";
 import { UserModule } from './modules/user/user.module';
+import { NotificationModule } from "src/modules/notification/notification.module";
 
 
 @Module({
@@ -22,6 +23,7 @@ import { UserModule } from './modules/user/user.module';
         UserModule,
         AuthModule,
         SessionModule,
+        NotificationModule,
     ],
     controllers: [],
     providers: [],
