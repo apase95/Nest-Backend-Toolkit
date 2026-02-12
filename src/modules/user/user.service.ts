@@ -87,7 +87,9 @@ export class UserService {
         if (search) {
             filter.$or = [
                 { email: { $regex: search, $options: 'i' } },
-                { displayName: { $regex: search, $options: 'i' } }
+                { displayName: { $regex: search, $options: 'i' } },
+                { firstName: { $regex: search, $options: 'i' } },
+                { lastName: { $regex: search, $options: 'i' } },
             ];
         }
 

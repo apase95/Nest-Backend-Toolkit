@@ -52,7 +52,6 @@ export class UserController {
         return this.userService.create(dto);
     };
 
-
     @Roles(UserRole.ADMIN)
     @Delete(":id")
     async deleteUser(@Req() req: any, @Param("id") id: string) {

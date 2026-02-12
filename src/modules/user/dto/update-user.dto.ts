@@ -57,7 +57,7 @@ export class UserQueryDto {
     @IsOptional()
     limit?: number;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     search?: string;
 };
