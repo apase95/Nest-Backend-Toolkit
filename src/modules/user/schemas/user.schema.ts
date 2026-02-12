@@ -13,7 +13,16 @@ export enum UserRole {
 
 @Schema({ 
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: { 
+        virtuals: true,
+        versionKey: false,
+        transform: (doc, ret: any) => {
+            ret.id = ret._id;
+            delete ret._id;
+            delete ret.password;
+            return ret;
+        },
+    },
     toObject: { virtuals: true },
 })export class User {
     @Prop({ required: true, unique: true, lowercase: true, trim: true })
