@@ -49,15 +49,3 @@ export class AdminResetPasswordDto {
     @MinLength(6)
     newPassword!: string;
 };
-
-export class UserQueryDto {
-    @IsOptional()
-    page?: number;
-
-    @IsOptional()
-    limit?: number;
-
-    @IsOptional()
-    @IsString()
-    search?: string;
-};

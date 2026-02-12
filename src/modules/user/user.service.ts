@@ -1,4 +1,5 @@
-import { ChangePasswordDto, ChangePhoneDto, UserQueryDto, AdminResetPasswordDto, UpdateProfileDto } from './dto/update-user.dto';
+import { ChangePasswordDto, ChangePhoneDto, AdminResetPasswordDto, UpdateProfileDto } from './dto/update-user.dto';
+import { UserQueryDto } from 'src/modules/user/dto/list-user.dto';
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";

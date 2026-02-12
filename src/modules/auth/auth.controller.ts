@@ -14,7 +14,10 @@ import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
-import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto, VerifyEmailDto } from "src/modules/auth/dto/auth.dto";
+import { RegisterDto } from "src/modules/auth/dto/register.dto";
+import { LoginDto } from "src/modules/auth/dto/login.dto";
+import { VerifyEmailDto } from "src/modules/auth/dto/auth.dto";
+import { ForgotPasswordDto, ResetPasswordDto } from "src/modules/auth/dto/password.dto";
 
 
 @Controller("auth")
