@@ -5,6 +5,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { SessionModule } from "./modules/session/session.module";
 import { UserModule } from './modules/user/user.module';
 import { NotificationModule } from "src/modules/notification/notification.module";
+import { HealthModule } from "src/modules/health/health.module";
 
 
 @Module({
@@ -24,6 +25,7 @@ import { NotificationModule } from "src/modules/notification/notification.module
         AuthModule,
         SessionModule,
         NotificationModule,
+        HealthModule,
     ],
     controllers: [],
     providers: [],
