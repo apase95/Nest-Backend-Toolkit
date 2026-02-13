@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Request } from "express";
 import { RolesGuard } from "src/common/guards/roles.guard";
@@ -8,12 +8,17 @@ import { UserQueryDto } from "src/modules/user/dto/list-user.dto";
 import { Roles } from "src/common/decorators/roles.decorator";
 import { UserRole } from "src/modules/user/schemas/user.schema";
 import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { CloudinaryService } from "../../common/storage";
 
 
 @Controller("user")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
-    constructor(private readonly userService: UserService) {}
+    constructor(
+        private readonly userService: UserService,
+        private readonly cloudinaryService: CloudinaryService
+    ) {}
 
     @Get("me")
     getMe(@Req() req: Request) {
@@ -34,6 +39,14 @@ export class UserController {
     async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
         return this.userService.changePassword(req.user.userId, dto);
     };
+
+    @Put('me/avatar')
+    @UseInterceptors(FileInterceptor('avatar'))
+    async updateAvatar(@UploadedFile() file: Express.Multer.File) {
+        const result = await this.cloudinaryService.uploadImage(file);
+        
+        return { url: result.secure_url, publicId: result.public_id };
+    }
 
     @Roles(UserRole.ADMIN)
     @Get()
