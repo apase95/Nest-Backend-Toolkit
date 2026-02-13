@@ -44,7 +44,7 @@ export enum UserRole {
     phoneNumber?: string;
 
     @Prop()
-    avatarURL?: string;
+    avatarUrl?: string;
 
     @Prop({ default: null, index: true })
     googleId?: string;

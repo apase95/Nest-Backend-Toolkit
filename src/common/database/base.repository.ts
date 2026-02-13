@@ -1,5 +1,6 @@
-import { Model, QueryFilter, UpdateQuery, Document, Types } from 'mongoose';
+import { Model, UpdateQuery, Document, Types } from 'mongoose';
 
+export type Filter<T> = Partial<T> & Record<string, any>;
 
 export abstract class BaseRepository<T extends Document> {
     constructor(protected readonly model: Model<T>) {}
@@ -8,7 +9,7 @@ export abstract class BaseRepository<T extends Document> {
         return this.model.create(doc);
     };
 
-    async findOne(filter: QueryFilter<T>): Promise<T | null> {
+    async findOne(filter: Filter<T>): Promise<T | null> {
         return this.model.findOne(filter).exec();
     };
 
@@ -17,7 +18,7 @@ export abstract class BaseRepository<T extends Document> {
     };
 
     async findAll(
-        filter: QueryFilter<T> = {},
+        filter: Filter<T> = {},
         skip: number = 0,
         limit: number = 10,
         sort: Record<string, any> = { createAt: -1 },
@@ -30,7 +31,7 @@ export abstract class BaseRepository<T extends Document> {
             .exec();
     };
 
-    async count(filter: QueryFilter<T> = {}): Promise<number> {
+    async count(filter: Filter<T> = {}): Promise<number> {
         return this.model.countDocuments(filter).exec();
     };
 
@@ -44,7 +45,7 @@ export abstract class BaseRepository<T extends Document> {
     };
 
     async updateOne(
-        filter: QueryFilter<T>,
+        filter: Filter<T>,
         update: UpdateQuery<T>,
     ): Promise<T | null> {
         return this.model
@@ -56,7 +57,7 @@ export abstract class BaseRepository<T extends Document> {
         return this.model.findByIdAndDelete(id).exec();
     };
 
-    async deleteMany(filter: QueryFilter<T>): Promise<any> {
+    async deleteMany(filter: Filter<T>): Promise<any> {
         return this.model.deleteMany(filter).exec();
     };
 };

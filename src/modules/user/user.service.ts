@@ -1,9 +1,10 @@
+import { User } from 'src/modules/user/schemas/user.schema';
 import { ChangePasswordDto, ChangePhoneDto, AdminResetPasswordDto, UpdateProfileDto } from './dto/update-user.dto';
 import { UserQueryDto } from 'src/modules/user/dto/list-user.dto';
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
-import { User, UserDocument, UserRole } from "./schemas/user.schema";
+import { UserDocument, UserRole } from "./schemas/user.schema";
 import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
 import * as bcrypt from "bcrypt";
 
@@ -32,8 +33,18 @@ export class UserService {
     async findById(
         id: string,
     ): Promise<UserDocument> {
-        const user = await this.userModel.findById(id).where({ isDeleted: false });
+        const user = await this.userModel.findById(id);
         if (!user) throw new NotFoundException("User not found");
+        return user;
+    };
+
+    async findByIdWithoutPassword(id: string): Promise<any> {
+        const user = await this.userModel
+            .findById(id)
+            .where({ isDeleted: false })
+            .select("-password")
+            .lean();
+        if (!user) throw new NotFoundException(`User not found ${id}`);
         return user;
     };
 

@@ -6,6 +6,8 @@ import { UserModule } from './modules/user/user.module';
 import { NotificationModule } from "src/modules/notification/notification.module";
 import { HealthModule } from "src/modules/health/health.module";
 import { DatabaseModule } from "src/common/database/database.module";
+import { StorageModule } from "src/common/storage";
+import { SecurityModule } from "src/common/security";
 
 
 @Module({
@@ -14,9 +16,13 @@ import { DatabaseModule } from "src/common/database/database.module";
             isGlobal: true,
             envFilePath: ".env",
         }),
+        
         DatabaseModule,
-        UserModule,
+        SecurityModule,
+        StorageModule,
+
         AuthModule,
+        UserModule,
         SessionModule,
         NotificationModule,
         HealthModule,

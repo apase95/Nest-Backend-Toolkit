@@ -53,11 +53,11 @@ export class AuthService {
         if (user) {
             if (provider === "google" && !user.googleId) {
                 user.googleId = profile.providerId;
-                user.avatarURL = user.avatarURL || profile.picture;
+                user.avatarUrl = user.avatarUrl || profile.picture;
                 await user.save();
             } else if (provider === "linkedin" && !user.linkedinId) {
                 user.linkedinId = profile.providerId;
-                user.avatarURL = user.avatarURL || profile.picture;
+                user.avatarUrl = user.avatarUrl || profile.picture;
                 await user.save();
             }
         } else {
@@ -149,6 +149,8 @@ export class AuthService {
     };
 
     async sendVerificationEmail(user: any) {
+        if (!user) throw new BadRequestException("User not found");
+        
         const token = uuidv4();
         await this.emailVerificationModel.create({ userId: user._id, token });
 

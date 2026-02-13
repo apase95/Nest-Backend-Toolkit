@@ -23,6 +23,7 @@ import { LinkedInStrategy } from "src/modules/auth/strategies/linkedin.strategy"
         SessionModule,
         PassportModule,
         MailModule,
+        ConfigModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],
@@ -39,7 +40,7 @@ import { LinkedInStrategy } from "src/modules/auth/strategies/linkedin.strategy"
         ]),
     ],
     controllers: [AuthController],
-    providers: [AuthService, JwtStrategy, GoogleStrategy, LinkedInStrategy],
+    providers: [AuthService, GoogleStrategy, LinkedInStrategy],
     exports: [AuthService],
 })
 export class AuthModule {}

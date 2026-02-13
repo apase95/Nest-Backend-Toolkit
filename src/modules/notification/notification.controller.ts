@@ -1,8 +1,7 @@
-import { NotificationService } from './notification.service';
+import { NotificationService } from "./notification.service";
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
-import { CreateNotificationDto } from 'src/modules/notification/dto/create-notification.dto';
-import { ListNotificationDto } from "src/modules/notification/dto/list-notification.dto";
+import { JwtAuthGuard } from "src/common/security/guards/jwt-auth.guard";
+import { CreateNotificationDto, ListNotificationDto } from "./dto";
 
 
 

@@ -3,16 +3,16 @@ import { Response } from "express";
 import { HealthService } from "src/modules/health/health.service";
 
 
-@Controller()
+@Controller("Health")
 export class HealthController {
     constructor(private readonly healthService: HealthService) {}
 
     @Get()
     checkHealth() {
         return { status: "OK" };
-    }
+    };
 
-    @Get()
+    @Get("status")
     async checkFullStatus(@Res() res: Response) {
         const isDbConnected = await this.healthService.checkDatabase();
         const systemHealth = this.healthService.getSystemHealth();
@@ -24,7 +24,7 @@ export class HealthController {
                 system: systemHealth,
             });
         } else {
-            return res.status(HttpStatus.OK).json({
+            return res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
                 status: "DOWN",
                 database: "DISCONNECTED",
                 system: systemHealth,

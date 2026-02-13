@@ -1,15 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Request } from "express";
-import { RolesGuard } from "src/common/guards/roles.guard";
+import { RolesGuard, JwtAuthGuard } from "src/common/security/guards";
 import { UserService } from "src/modules/user/user.service";
-import { AdminResetPasswordDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, UpdateProfileDto } from "src/modules/user/dto/update-user.dto";
-import { UserQueryDto } from "src/modules/user/dto/list-user.dto";
+import { CreateUserDto, UpdateProfileDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, AdminResetPasswordDto, UserQueryDto } from "./dto";
 import { Roles } from "src/common/decorators/roles.decorator";
 import { UserRole } from "src/modules/user/schemas/user.schema";
-import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { CloudinaryService } from "../../common/storage";
+import { CloudinaryService } from "src/common/storage";
 
 
 @Controller("user")
@@ -21,8 +18,8 @@ export class UserController {
     ) {}
 
     @Get("me")
-    getMe(@Req() req: Request) {
-        return req.user;
+    async getMe(@Req() req: any) {
+        return this.userService.findByIdWithoutPassword(req.user.userId);
     };
 
     @Put("me")
@@ -40,13 +37,22 @@ export class UserController {
         return this.userService.changePassword(req.user.userId, dto);
     };
 
-    @Put('me/avatar')
-    @UseInterceptors(FileInterceptor('avatar'))
-    async updateAvatar(@UploadedFile() file: Express.Multer.File) {
+    @Put("me/avatar")
+    @UseInterceptors(FileInterceptor("avatar"))
+    async updateAvatar(
+        @Req() req: any,
+        @UploadedFile() file: Express.Multer.File
+    ) {
         const result = await this.cloudinaryService.uploadImage(file);
-        
-        return { url: result.secure_url, publicId: result.public_id };
-    }
+        await this.userService.updateUserProfile(req.user.userId, {
+            avatarUrl: result.secure_url
+        });
+        return { 
+            message: "Avatar updated successfully",
+            url: result.secure_url, 
+            publicId: result.public_id 
+        };
+    };
 
     @Roles(UserRole.ADMIN)
     @Get()

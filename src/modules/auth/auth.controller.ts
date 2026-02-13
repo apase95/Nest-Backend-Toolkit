@@ -1,23 +1,9 @@
-import {
-    Controller,
-    Post,
-    Body,
-    Req,
-    Res,
-    HttpCode,
-    HttpStatus,
-    UnauthorizedException,
-    Get,
-    UseGuards,
-} from "@nestjs/common";
+import { Controller, Post, Body, Req, Res, HttpCode, HttpStatus, UnauthorizedException, Get, UseGuards } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
-import { RegisterDto } from "src/modules/auth/dto/register.dto";
-import { LoginDto } from "src/modules/auth/dto/login.dto";
-import { VerifyEmailDto } from "src/modules/auth/dto/auth.dto";
-import { ForgotPasswordDto, ResetPasswordDto } from "src/modules/auth/dto/password.dto";
+import { RegisterDto, LoginDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto } from "./dto";
 
 
 @Controller("auth")
