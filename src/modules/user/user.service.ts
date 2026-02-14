@@ -5,7 +5,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { UserDocument, UserRole } from "./schemas/user.schema";
 import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
-import { PaginationDto } from "src/common/dto";
+import { MetaData, PaginationDto } from "src/common/dto";
 import * as bcrypt from "bcrypt";
 
 
@@ -92,39 +92,31 @@ export class UserService {
     };
 
     async findAllUsers(query: PaginationDto) {
-        const { limit, search, sortOrder, sortBy, skip } = query; 
-
+        const { page = 1, limit = 10, search } = query;
+        const skip = (page - 1) * limit;
         const filter: any = { isDeleted: false };
+        
         if (search) {
             filter.$or = [
                 { email: { $regex: search, $options: "i" } },
                 { displayName: { $regex: search, $options: "i" } },
+                { firstName: { $regex: search, $options: "i" } },
+                { lastName: { $regex: search, $options: "i" } },
             ];
         };
-        const sortOptions: any = {};
-        if (sortBy) {
-            sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
-        }
 
         const [users, total] = await Promise.all([
             this.userModel
-                .find(filter)
-                .sort(sortOptions)
-                .skip(skip)
-                .limit(limit || 10)
-                .select("-password")
-                .exec(),
-            this.userModel.countDocuments(filter).exec()
+                .find(filter).sort({ createdAt: -1 }).skip(skip)
+                .limit(limit).select("-password").exec(),
+            this.userModel.countDocuments(filter).exec(),
         ]);
+
+        const meta = new MetaData(total, page, limit);
 
         return {
             data: users,
-            meta: {
-                total,
-                page: query.page,
-                limit,
-                totalPages: Math.ceil(total / (limit || 10)),
-            }
+            meta: meta,
         };
     };
 

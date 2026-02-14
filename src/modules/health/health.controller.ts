@@ -1,6 +1,7 @@
 import { Controller, Get, Res, HttpStatus } from "@nestjs/common";
 import { Response } from "express";
 import { HealthService } from "src/modules/health/health.service";
+import { ApiResponse } from "src/common/dto";
 
 
 @Controller("Health")
@@ -18,17 +19,23 @@ export class HealthController {
         const systemHealth = this.healthService.getSystemHealth();
 
         if (isDbConnected) {
-            return res.status(HttpStatus.OK).json({
-                status: "UP",
-                database: "CONNECTED",
-                system: systemHealth,
-            });
+            return res.status(HttpStatus.OK).json(
+                ApiResponse.success(
+                    {
+                        status: "UP",
+                        database: "CONNECTED",
+                        system: systemHealth,
+                    }, 
+                    "System operational"
+                )
+            );
         } else {
-            return res.status(HttpStatus.SERVICE_UNAVAILABLE).json({
-                status: "DOWN",
-                database: "DISCONNECTED",
-                system: systemHealth,
-            });
+            return res.status(HttpStatus.SERVICE_UNAVAILABLE).json(
+                ApiResponse.error(
+                    "System degraded: Database disconnected", 
+                    HttpStatus.SERVICE_UNAVAILABLE
+                )
+            );
         }
     };
 };

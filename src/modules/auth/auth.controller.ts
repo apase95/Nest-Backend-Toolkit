@@ -4,6 +4,7 @@ import { AuthService } from "./auth.service";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { RegisterDto, LoginDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto } from "./dto";
+import { ApiResponse } from "src/common/dto";
 
 
 @Controller("auth")
@@ -26,7 +27,11 @@ export class AuthController {
     async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
         const data = await this.authService.register(registerDto);
         res.cookie("refreshToken", data.refreshToken, this.getCookieOptions());
-        return { user: data.user, accessToken: data.accessToken };
+        return ApiResponse.success(
+            { user: data.user, accessToken: data.accessToken },
+            "User registered successfully",
+            201
+        );
     };
 
     @Post("login")
@@ -41,12 +46,18 @@ export class AuthController {
         const data = await this.authService.login(loginDto, userAgent, ipAddress);
 
         res.cookie("refreshToken", data.refreshToken, this.getCookieOptions());
-        return { user: data.user, accessToken: data.accessToken };
+        return ApiResponse.success(
+            { user: data.user, accessToken: data.accessToken },
+            "Login successfully"
+        );
     };
 
     @Post("refresh-token")
     @HttpCode(HttpStatus.OK)
-    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    async refreshToken(
+        @Req() req: Request, 
+        @Res({ passthrough: true }) res: Response
+    ) {
         const incomingRefreshToken = req.cookies["refreshToken"];
         if (!incomingRefreshToken) throw new UnauthorizedException("No Refresh Token provided");
 
@@ -60,19 +71,25 @@ export class AuthController {
         );
 
         res.cookie("refreshToken", data.refreshToken, this.getCookieOptions());
-        return { accessToken: data.accessToken };
+        return ApiResponse.success(
+            { accessToken: data.accessToken }, 
+            "Token refreshed successfully"
+        );
     };
 
     @Post("logout")
     @HttpCode(HttpStatus.OK)
-    async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    async logout(
+        @Req() req: Request, 
+        @Res({ passthrough: true }) res: Response
+    ) {
         const refreshToken = req.cookies["refreshToken"];
         if (refreshToken) {
             await this.authService.logout(refreshToken);
         }
 
         res.clearCookie("refreshToken", { ...this.getCookieOptions(), maxAge: 0 });
-        return { message: "Logged out successfully" };
+        return ApiResponse.success(null, "Logged out successfully");
     };
 
     @Post("verify-email")
@@ -82,12 +99,14 @@ export class AuthController {
 
     @Post("forgot-password")
     async forgotPassword(@Body() dto: ForgotPasswordDto) {
-        return this.authService.forgotPassword(dto);
+        await this.authService.forgotPassword(dto);
+        return ApiResponse.success(null, "If email exists, a reset link has been sent");
     };
 
     @Post("reset-password")
     async resetPassword(@Body() dto: ResetPasswordDto) {
-        return this.authService.resetPassword(dto);
+        await this.authService.resetPassword(dto);
+        return ApiResponse.success(null, "Password has been reset successfully");
     };
 
     @Get("google")

@@ -2,7 +2,7 @@ import { NotificationService } from "./notification.service";
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { CreateNotificationDto, ListNotificationDto } from "./dto";
-
+import { ApiResponse } from "src/common/dto";
 
 
 @Controller("notifications")
@@ -16,7 +16,8 @@ export class NotificationController {
         @Body() dto: CreateNotificationDto
     ) {
         dto.userId = req.user.userId;
-        return this.notificationService.send(dto);
+        const notification = await this.notificationService.send(dto);
+        return ApiResponse.created(notification, "Notification created successfully");
     };
 
     @Get()
@@ -29,12 +30,14 @@ export class NotificationController {
 
     @Get("unread-count")
     async getUnreadCount(@Req() req: any) {
-        return this.notificationService.getUnreadCount(req.user.userId);
+        const result = await this.notificationService.getUnreadCount(req.user.userId);
+        return ApiResponse.success(result, "Unread count fetched successfully");
     };
     
     @Patch("read-all")
     async markAllAsRead(@Req() req: any) {
-        return this.notificationService.markAllAsRead(req.user.userId);
+        await this.notificationService.markAllAsRead(req.user.userId);
+        return ApiResponse.success(null, "All notifications marked as read");
     };
     
     @Patch(":id/read")
@@ -42,7 +45,8 @@ export class NotificationController {
         @Req() req: any,
         @Param("id") id: string, 
     ) {
-        return this.notificationService.markAsRead(id, req.user.userId);
+        const notification = await this.notificationService.markAsRead(id, req.user.userId);
+        return ApiResponse.success(notification, "Notification marked as read");
     };
 
     @Delete(":id")
@@ -50,6 +54,7 @@ export class NotificationController {
         @Req() req: any,
         @Param("id") id: string,
     ){
-        return this.notificationService.deleteNotification(id, req.user.userId);
+        await this.notificationService.deleteNotification(id, req.user.userId);
+        return ApiResponse.success(null, "Notification deleted successfully");
     };
 };

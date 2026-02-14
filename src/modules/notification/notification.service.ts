@@ -10,16 +10,20 @@ export class NotificationService {
 
     async send(dto: CreateNotificationDto) {
         return this.notificationRepository.create(dto);
-    };
+    }
 
     async getMyNotifications(userId: string, query: ListNotificationDto) {
         const { page = 1, limit = 10, isRead } = query;
         const skip = (page - 1) * limit;
 
-        const isReadBool = isRead === 'true' ? true : isRead === 'false' ? false : undefined;
+        const isReadBool = isRead === "true" ? true : isRead === "false" ? false : undefined;
 
-        const { notifications, total, unreadCount } 
-            = await this.notificationRepository.findByUser(userId, skip, limit, isReadBool);
+        const { notifications, total, unreadCount } = await this.notificationRepository.findByUser(
+            userId,
+            skip,
+            limit,
+            isReadBool,
+        );
 
         return {
             data: notifications,
@@ -35,19 +39,19 @@ export class NotificationService {
 
     async markAsRead(id: string, userId: string) {
         const notification = await this.notificationRepository.markAsRead(id, userId);
-        if (!notification) throw new NotFoundException('Notification not found');
+        if (!notification) throw new NotFoundException("Notification not found");
         return notification;
     };
 
     async markAllAsRead(userId: string) {
         await this.notificationRepository.markAllAsRead(userId);
-        return { message: 'All notifications marked as read' };
+        return { message: "All notifications marked as read" };
     };
 
     async deleteNotification(id: string, userId: string) {
         const result = await this.notificationRepository.delete(id, userId);
-        if (result.deletedCount === 0) throw new NotFoundException('Notification not found');
-        return { message: 'Notification deleted' };
+        if (result.deletedCount === 0) throw new NotFoundException("Notification not found");
+        return { message: "Notification deleted" };
     };
 
     async getUnreadCount(userId: string) {
