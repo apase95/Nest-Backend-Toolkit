@@ -8,7 +8,7 @@ import { HealthModule } from "src/modules/health/health.module";
 import { DatabaseModule } from "src/common/database/database.module";
 import { StorageModule } from "src/common/storage";
 import { SecurityModule } from "src/common/security";
-import { databaseConfig, securityConfig, validate } from "src/common/config";
+import { cloudinaryConfig, databaseConfig, securityConfig, validate } from "src/common/config";
 
 
 @Module({
@@ -16,7 +16,7 @@ import { databaseConfig, securityConfig, validate } from "src/common/config";
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: ".env",
-            load: [databaseConfig, securityConfig],
+            load: [databaseConfig, securityConfig, cloudinaryConfig],
             validate: validate,
         }),
         

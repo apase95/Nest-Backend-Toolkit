@@ -15,7 +15,7 @@ export class ApiKeyStrategy extends PassportStrategy(HeaderAPIKeyStrategy, "api-
     }
     
     public validate = (apiKey: string): boolean => {
-        const validApiKey = this.configService.getOrThrow<string>("API_KEY");
+        const validApiKey = this.configService.getOrThrow<string>("security.apiKey");
 
         const bufferApiKey = Buffer.from(apiKey);
         const bufferValidKey = Buffer.from(validApiKey);

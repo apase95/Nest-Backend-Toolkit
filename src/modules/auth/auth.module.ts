@@ -27,9 +27,9 @@ import { LinkedInStrategy } from "src/modules/auth/strategies/linkedin.strategy"
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (configService: ConfigService): JwtModuleOptions => ({
-                secret: configService.getOrThrow<string>("JWT_ACCESS_SECRET"),
+                secret: configService.getOrThrow<string>("security.jwt.accessSecret"),
                 signOptions: {
-                    expiresIn: configService.getOrThrow<StringValue>("JWT_ACCESS_EXPIRATION"),
+                    expiresIn: configService.getOrThrow<StringValue>("security.jwt.accessExpiresIn"),
                 },
             }),
         }),

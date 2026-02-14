@@ -80,7 +80,7 @@ export class AuthService {
         let payload;
         try {
             payload = this.jwtService.verify(inComingRefreshToken, {
-                secret: this.configService.get<string>("JWT_REFRESH_SECRET"),
+                secret: this.configService.getOrThrow<string>("security.jwt.refreshSecret"),
             });
         } catch (error) {
             throw new UnauthorizedException("Invalid or expired refresh token");
@@ -114,12 +114,12 @@ export class AuthService {
         const payload = { sub: user._id, role: user.role, sessionId };
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
-                secret: this.configService.get("JWT_ACCESS_SECRET"),
-                expiresIn: this.configService.get("JWT_ACCESS_EXPIRATION"),
+                secret: this.configService.getOrThrow("security.jwt.accessSecret"),
+                expiresIn: this.configService.getOrThrow("security.jwt.accessExpiresIn"),
             }),
             this.jwtService.signAsync(payload, {
-                secret: this.configService.get("JWT_REFRESH_SECRET"),
-                expiresIn: this.configService.get("JWT_REFRESH_EXPIRATION"),
+                secret: this.configService.getOrThrow("security.jwt.refreshSecret"),
+                expiresIn: this.configService.getOrThrow("security.jwt.refreshExpiresIn"),
             }),
         ]);
 
@@ -154,7 +154,7 @@ export class AuthService {
         const token = uuidv4();
         await this.emailVerificationModel.create({ userId: user._id, token });
 
-        const clientUrl = this.configService.get<string>("CLIENT_URL");
+        const clientUrl = this.configService.getOrThrow<string>("CLIENT_URL");
         const link = `${clientUrl}/verify-email?token=${token}`;
 
         await this.mailService.sendEmail(
@@ -191,7 +191,7 @@ export class AuthService {
         const token = uuidv4();
         await this.passwordResetModel.create({ userId: user._id, token });
 
-        const clientUrl = this.configService.get<string>('CLIENT_URL');
+        const clientUrl = this.configService.getOrThrow<string>("CLIENT_URL");
         const link = `${clientUrl}/reset-password?token=${token}`;
 
         await this.mailService.sendEmail(

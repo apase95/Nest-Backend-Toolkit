@@ -20,7 +20,7 @@ export class SessionService {
         ipAddress?: string,
         sessionId?: Types.ObjectId,
     ): Promise<SessionDocument> {
-        const refreshExpiresIn = this.configService.get<string>("JWT_REFRESH_EXPIRATION", "7d"); 
+        const refreshExpiresIn = this.configService.get<string>("security.jwt.refreshExpiresIn", "7d"); 
         const expireAt = new Date(Date.now() + ms(refreshExpiresIn as StringValue));
 
         return this.sessionModel.create({
@@ -45,7 +45,7 @@ export class SessionService {
         sessionId: Types.ObjectId, 
         newRefreshToken: string
     ): Promise<void>{
-        const refreshExpiresIn = this.configService.get<string>("JWT_REFRESH_EXPIRATION", "7d");
+        const refreshExpiresIn = this.configService.get<string>("security.jwt.refreshExpiresIn", "7d");
         const expireAt = new Date(Date.now() + ms(refreshExpiresIn as StringValue));
 
         await this.sessionModel.updateOne(

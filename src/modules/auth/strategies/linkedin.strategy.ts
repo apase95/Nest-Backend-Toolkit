@@ -8,9 +8,9 @@ import { ConfigService } from "@nestjs/config";
 export class LinkedInStrategy extends PassportStrategy(Strategy, "linkedin") {
     constructor(configService: ConfigService) {
         super({
-            clientID: configService.getOrThrow<string>("LINKEDIN_CLIENT_ID"),
-            clientSecret: configService.getOrThrow<string>("LINKEDIN_CLIENT_SECRET"),
-            callbackURL: configService.getOrThrow<string>("LINKEDIN_CALLBACK_URL"),
+            clientID: configService.getOrThrow<string>("security.linkedin.clientId"),
+            clientSecret: configService.getOrThrow<string>("security.linkedin.clientSecret"),
+            callbackURL: configService.getOrThrow<string>("security.linkedin.callbackUrl"),
             scope: ["openid", "profile", "email"],
         });
     };
