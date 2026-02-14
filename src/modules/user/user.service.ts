@@ -1,11 +1,11 @@
 import { User } from 'src/modules/user/schemas/user.schema';
 import { ChangePasswordDto, ChangePhoneDto, AdminResetPasswordDto, UpdateProfileDto } from './dto/update-user.dto';
-import { UserQueryDto } from 'src/modules/user/dto/list-user.dto';
 import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { UserDocument, UserRole } from "./schemas/user.schema";
 import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
+import { PaginationDto } from "src/common/dto";
 import * as bcrypt from "bcrypt";
 
 
@@ -91,22 +91,29 @@ export class UserService {
         await user.save();
     };
 
-    async findAllUsers(query: UserQueryDto) {
-        const { page = 1, limit = 10, search } = query;
-        const skip = (page - 1) * limit;
+    async findAllUsers(query: PaginationDto) {
+        const { limit, search, sortOrder, sortBy, skip } = query; 
 
         const filter: any = { isDeleted: false };
         if (search) {
             filter.$or = [
-                { email: { $regex: search, $options: 'i' } },
-                { displayName: { $regex: search, $options: 'i' } },
-                { firstName: { $regex: search, $options: 'i' } },
-                { lastName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: "i" } },
+                { displayName: { $regex: search, $options: "i" } },
             ];
+        };
+        const sortOptions: any = {};
+        if (sortBy) {
+            sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
         }
 
         const [users, total] = await Promise.all([
-            this.userModel.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }).exec(),
+            this.userModel
+                .find(filter)
+                .sort(sortOptions)
+                .skip(skip)
+                .limit(limit || 10)
+                .select("-password")
+                .exec(),
             this.userModel.countDocuments(filter).exec()
         ]);
 
@@ -114,9 +121,9 @@ export class UserService {
             data: users,
             meta: {
                 total,
-                page: Number(page),
-                limit: Number(limit),
-                totalPages: Math.ceil(total / limit),
+                page: query.page,
+                limit,
+                totalPages: Math.ceil(total / (limit || 10)),
             }
         };
     };

@@ -1,11 +1,12 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { RolesGuard, JwtAuthGuard } from "src/common/guards";
 import { UserService } from "src/modules/user/user.service";
-import { CreateUserDto, UpdateProfileDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, AdminResetPasswordDto, UserQueryDto } from "./dto";
+import { CreateUserDto, UpdateProfileDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, AdminResetPasswordDto } from "./dto";
 import { Roles } from "src/common/decorators/roles.decorator";
 import { UserRole } from "src/modules/user/schemas/user.schema";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CloudinaryService } from "src/common/storage";
+import { ApiResponse, PaginationDto } from "src/common/dto";
 
 
 @Controller("user")
@@ -55,8 +56,14 @@ export class UserController {
 
     @Roles(UserRole.ADMIN)
     @Get()
-    async getUsers(@Query() query: UserQueryDto) {
-        return this.userService.findAllUsers(query);
+    async getUsers(@Query() query: PaginationDto) {
+        const result = await this.userService.findAllUsers(query);
+        return ApiResponse.success(
+            result.data,
+            "List users fetched successfully",
+            200,
+            result.meta,
+        );
     };
 
     @Roles(UserRole.ADMIN)

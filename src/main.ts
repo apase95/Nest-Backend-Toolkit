@@ -3,6 +3,7 @@ import { AppModule } from "./app.module";
 import cookieParser from "cookie-parser";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { HttpExceptionFilter, ValidationExceptionFilter } from "./common/filters";
 
 
 async function bootstrap() {
@@ -15,7 +16,13 @@ async function bootstrap() {
         new ValidationPipe({
             whitelist: true,
             forbidNonWhitelisted: true,
+            transform: true,
         }),
+    );
+
+    app.useGlobalFilters(
+        new HttpExceptionFilter(), 
+        new ValidationExceptionFilter()
     );
 
     app.enableCors(configService.get("security.cors"));
