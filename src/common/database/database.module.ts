@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { getMongooseConfig } from "src/common/database/mongo.connection";
 
@@ -8,6 +8,7 @@ import { getMongooseConfig } from "src/common/database/mongo.connection";
 @Module({
     imports: [
         MongooseModule.forRootAsync({
+            imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: getMongooseConfig
         }),

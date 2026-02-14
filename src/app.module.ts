@@ -8,6 +8,7 @@ import { HealthModule } from "src/modules/health/health.module";
 import { DatabaseModule } from "src/common/database/database.module";
 import { StorageModule } from "src/common/storage";
 import { SecurityModule } from "src/common/security";
+import { databaseConfig, securityConfig, validate } from "src/common/config";
 
 
 @Module({
@@ -15,6 +16,8 @@ import { SecurityModule } from "src/common/security";
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: ".env",
+            load: [databaseConfig, securityConfig],
+            validate: validate,
         }),
         
         DatabaseModule,

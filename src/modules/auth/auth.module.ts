@@ -8,7 +8,6 @@ import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { UserModule } from "../user/user.module";
 import { SessionModule } from "../session/session.module";
-import { JwtStrategy } from "./strategies/jwt.strategy";
 import { StringValue } from "ms";
 import { MailModule } from "src/modules/mail/mail.module";
 import { EmailVerification, EmailVerificationSchema } from "src/modules/auth/schemas/email-verification.schema";
