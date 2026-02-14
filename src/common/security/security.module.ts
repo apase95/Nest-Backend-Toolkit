@@ -5,7 +5,7 @@ import { HashService } from "./hash.service";
 import { ApiKeyStrategy } from "./api-key.strategy";
 import { JwtStrategy } from "./jwt.strategy";
 import { JwtRefreshStrategy } from "./jwt-refresh.strategy";
-import { ApiKeyGuard, JwtAuthGuard } from "src/common/security/guards";
+import { ApiKeyGuard, JwtAuthGuard } from "src/common/guards";
 
 
 @Global()
@@ -13,21 +13,13 @@ import { ApiKeyGuard, JwtAuthGuard } from "src/common/security/guards";
     imports: [PassportModule, ConfigModule],
     providers: [
         HashService, 
-
         ApiKeyStrategy, 
+
         JwtStrategy, 
         JwtRefreshStrategy,
-
-        ApiKeyGuard,
-        JwtAuthGuard,
     ],
     exports: [
         HashService, 
-        ApiKeyStrategy, 
-        JwtStrategy, 
-        JwtRefreshStrategy,
-        ApiKeyGuard,
-        JwtAuthGuard,
     ],
 })
 export class SecurityModule {}

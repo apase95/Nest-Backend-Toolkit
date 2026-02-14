@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { Request } from "express";
-import { RolesGuard, JwtAuthGuard } from "src/common/security/guards";
+import { RolesGuard, JwtAuthGuard } from "src/common/guards";
 import { UserService } from "src/modules/user/user.service";
 import { CreateUserDto, UpdateProfileDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, AdminResetPasswordDto, UserQueryDto } from "./dto";
 import { Roles } from "src/common/decorators/roles.decorator";
