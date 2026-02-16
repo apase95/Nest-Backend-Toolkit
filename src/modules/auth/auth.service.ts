@@ -13,7 +13,7 @@ import { MailService } from "src/modules/mail/mail.service";
 import { EmailVerification } from "src/modules/auth/schemas/email-verification.schema";
 import { PasswordReset } from "src/modules/auth/schemas/password-reset.schema";
 import { UserRole } from "src/modules/user/schemas/user.schema";
-import { v4 as uuidv4 } from "uuid";
+import { formatDisplayName, nanoid } from "src/common/utils";
 
 
 @Injectable()
@@ -61,10 +61,15 @@ export class AuthService {
                 await user.save();
             }
         } else {
-            const randomPassword = uuidv4();
+            const randomPassword = nanoid(16);
+            const rawFirstName = profile.name?.givenName || profile.firstName;
+            const rawLastName = profile.name?.familyName || profile.lastName;
+            const displayName = formatDisplayName(rawFirstName, rawLastName, profile.email);
             user = await this.userService.create({
                 email: profile.email,
-                displayName: `${profile.firstName} ${profile.lastName}`,
+                displayName: displayName,
+                firstName: rawFirstName || "",
+                lastName: rawLastName || "",
                 password: randomPassword,
                 role: UserRole.USER,
                 isEmailVerified: true,
@@ -151,7 +156,7 @@ export class AuthService {
     async sendVerificationEmail(user: any) {
         if (!user) throw new BadRequestException("User not found");
         
-        const token = uuidv4();
+        const token = nanoid(32);
         await this.emailVerificationModel.create({ userId: user._id, token });
 
         const clientUrl = this.configService.getOrThrow<string>("CLIENT_URL");
@@ -188,7 +193,7 @@ export class AuthService {
 
         await this.passwordResetModel.deleteMany({ userId: user._id });
 
-        const token = uuidv4();
+        const token = nanoid(32);
         await this.passwordResetModel.create({ userId: user._id, token });
 
         const clientUrl = this.configService.getOrThrow<string>("CLIENT_URL");
