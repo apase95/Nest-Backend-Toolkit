@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpExceptionFilter, ValidationExceptionFilter } from "./common/filters";
+import { CustomExceptionFilter, ValidationException } from "./common/exceptions";
 
 
 async function bootstrap() {
@@ -17,13 +18,17 @@ async function bootstrap() {
             whitelist: true,
             forbidNonWhitelisted: true,
             transform: true,
+            exceptionFactory: (errors) => {
+                const formattedErrors = errors.map(error => ({
+                    field: error.property,
+                    constraints: error.constraints,
+                }));
+                return new ValidationException(formattedErrors);
+            },
         }),
     );
 
-    app.useGlobalFilters(
-        new HttpExceptionFilter(), 
-        new ValidationExceptionFilter()
-    );
+    app.useGlobalFilters(new CustomExceptionFilter());
 
     app.enableCors(configService.get("security.cors"));
 

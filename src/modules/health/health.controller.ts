@@ -4,13 +4,13 @@ import { HealthService } from "src/modules/health/health.service";
 import { ApiResponse } from "src/common/dto";
 
 
-@Controller("Health")
+@Controller("health")
 export class HealthController {
     constructor(private readonly healthService: HealthService) {}
 
     @Get()
     checkHealth() {
-        return { status: "OK" };
+        return ApiResponse.success({ status: "OK" }, "Server is up and running");
     };
 
     @Get("status")

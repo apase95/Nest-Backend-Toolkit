@@ -27,10 +27,9 @@ export class AuthController {
     async register(@Body() registerDto: RegisterDto, @Res({ passthrough: true }) res: Response) {
         const data = await this.authService.register(registerDto);
         res.cookie("refreshToken", data.refreshToken, this.getCookieOptions());
-        return ApiResponse.success(
+        return ApiResponse.created(
             { user: data.user, accessToken: data.accessToken },
             "User registered successfully",
-            201
         );
     };
 
