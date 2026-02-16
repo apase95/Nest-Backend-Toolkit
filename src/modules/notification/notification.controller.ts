@@ -3,6 +3,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuard
 import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 import { CreateNotificationDto, ListNotificationDto } from "./dto";
 import { ApiResponse } from "src/common/dto";
+import { ParseIdPipe } from "src/common/pipes";
 
 
 @Controller("notifications")
@@ -43,7 +44,7 @@ export class NotificationController {
     @Patch(":id/read")
     async markAsRead(
         @Req() req: any,
-        @Param("id") id: string, 
+        @Param("id", ParseIdPipe) id: string, 
     ) {
         const notification = await this.notificationService.markAsRead(id, req.user.userId);
         return ApiResponse.success(notification, "Notification marked as read");
@@ -52,7 +53,7 @@ export class NotificationController {
     @Delete(":id")
     async deleteNotification(
         @Req() req: any,
-        @Param("id") id: string,
+        @Param("id", ParseIdPipe) id: string,
     ){
         await this.notificationService.deleteNotification(id, req.user.userId);
         return ApiResponse.success(null, "Notification deleted successfully");

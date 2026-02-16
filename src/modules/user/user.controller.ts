@@ -7,6 +7,7 @@ import { UserRole } from "src/modules/user/schemas/user.schema";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CloudinaryService } from "src/common/storage";
 import { ApiResponse, PaginationDto } from "src/common/dto";
+import { ParseIdPipe } from "src/common/pipes";
 
 
 @Controller("user")
@@ -71,7 +72,7 @@ export class UserController {
 
     @Roles(UserRole.ADMIN)
     @Get(":id")
-    async getUserById(@Param("id") id: string) {
+    async getUserById(@Param("id", ParseIdPipe) id: string) {
         const user = await this.userService.findById(id);
         return ApiResponse.success(user, "User fetched successfully");
     };
@@ -85,28 +86,28 @@ export class UserController {
 
     @Roles(UserRole.ADMIN)
     @Delete(":id")
-    async deleteUser(@Req() req: any, @Param("id") id: string) {
+    async deleteUser(@Req() req: any, @Param("id", ParseIdPipe) id: string) {
         await this.userService.deleteUser(req.user.userId, id);
         return ApiResponse.success(null, "User deleted successfully");
     };
 
     @Roles(UserRole.ADMIN)
     @Patch(":id/lock")
-    async toggleUserLock(@Req() req: any, @Param("id") id: string) {
+    async toggleUserLock(@Req() req: any, @Param("id", ParseIdPipe) id: string) {
         const result = await this.userService.toggleUserLock(req.user.userId, id);
         return ApiResponse.success(result, "User lock status updated");
     };
 
     @Roles(UserRole.ADMIN)
     @Patch(":id/role")
-    async changeUserRole(@Req() req: any, @Param("id") id: string, @Body() dto: ChangeRoleDto) {
+    async changeUserRole(@Req() req: any, @Param("id", ParseIdPipe) id: string, @Body() dto: ChangeRoleDto) {
         const result = await this.userService.changeUserRole(req.user.userId, id, dto.role);
         return ApiResponse.success(result, "User role updated successfully");
     };
 
     @Roles(UserRole.ADMIN)
     @Patch(":id/reset-password")
-    async adminResetPassword(@Param("id") id: string, @Body() dto: AdminResetPasswordDto) {
+    async adminResetPassword(@Param("id", ParseIdPipe) id: string, @Body() dto: AdminResetPasswordDto) {
         await this.userService.adminResetPassword(id, dto);
         return ApiResponse.success(null, "User password reset successfully");
     };
