@@ -5,10 +5,15 @@ import { ConfigService } from "@nestjs/config";
 import { CustomExceptionFilter } from "./common/exceptions";
 import { AppValidationPipe } from "src/common/pipes";
 import { LoggingInterceptor, RequestIdInterceptor, TimeoutInterceptor, TransformInterceptor } from "./common/interceptors";
+import { AppLogger } from "./common/logger"; 
+
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, { bufferLogs: true });
     const configService = app.get(ConfigService);
+
+    const logger = app.get(AppLogger);
+    app.useLogger(logger);
 
     app.use(cookieParser());
 
@@ -18,7 +23,7 @@ async function bootstrap() {
 
     app.useGlobalInterceptors(
         new RequestIdInterceptor(),
-        new LoggingInterceptor(),
+        new LoggingInterceptor(logger),
         new TimeoutInterceptor(),
         new TransformInterceptor(),
     );
@@ -27,6 +32,6 @@ async function bootstrap() {
 
     const port = configService.get<number>("PORT") || 3000;
     await app.listen(port);
-    console.log(`Application is running on: ${await app.getUrl()}`);
+    logger.log(`Application is running on: ${await app.getUrl()}`, 'Bootstrap');
 }
 bootstrap();
