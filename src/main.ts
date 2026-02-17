@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import { ConfigService } from "@nestjs/config";
 import { CustomExceptionFilter } from "./common/exceptions";
 import { AppValidationPipe } from "src/common/pipes";
-
+import { LoggingInterceptor, RequestIdInterceptor, TimeoutInterceptor, TransformInterceptor } from "./common/interceptors";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -15,6 +15,13 @@ async function bootstrap() {
     app.useGlobalPipes(new AppValidationPipe());
 
     app.useGlobalFilters(new CustomExceptionFilter());
+
+    app.useGlobalInterceptors(
+        new RequestIdInterceptor(),
+        new LoggingInterceptor(),
+        new TimeoutInterceptor(),
+        new TransformInterceptor(),
+    );
 
     app.enableCors(configService.get("security.cors"));
 
