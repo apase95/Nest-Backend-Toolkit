@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: nest_toolkit_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGO_URI=mongodb://mongo:27017/nest-toolkit
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    restart: always
+    networks:
+      - nest_network
+
+  mongo:
+    image: mongo:6.0
+    container_name: nest_toolkit_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - nest_network
+
+volumes:
+  mongo_data:
+
+networks:
+  nest_network:
+    driver: bridge
