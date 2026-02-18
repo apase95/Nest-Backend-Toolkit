@@ -6,6 +6,8 @@ import { CustomExceptionFilter } from "./common/exceptions";
 import { AppValidationPipe } from "src/common/pipes";
 import { LoggingInterceptor, RequestIdInterceptor, TimeoutInterceptor, TransformInterceptor } from "./common/interceptors";
 import { AppLogger } from "./common/logger"; 
+import helmet from "helmet";
+import hpp from "hpp"; 
 
 
 async function bootstrap() {
@@ -14,6 +16,10 @@ async function bootstrap() {
 
     const logger = app.get(AppLogger);
     app.useLogger(logger);
+
+    app.use(helmet());
+
+    app.use(hpp());
 
     app.use(cookieParser());
 

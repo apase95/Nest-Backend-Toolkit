@@ -10,13 +10,24 @@ export default registerAs("security", () => ({
     },
     apiKey: process.env.API_KEY,
     cors: {
-        origin: process.env.CLIENT_URL,
+        origin: (origin, callback) => {
+            const clientUrl = process.env.CLIENT_URL || "";
+            const allowOrigins = clientUrl.split(",").map(url => url.trim());
+            if (!origin || allowOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "X-API-Key"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-API-Key", "X-Request-ID"],
+        exposedHeaders: ["Content-Range", "X-Total-Count"],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     },
     rateLimit: {
-        ttl: parseInt(process.env.THROTTLE_TTL || "60", 10),
+        ttl: parseInt(process.env.THROTTLE_TTL || "60000", 10),
         limit: parseInt(process.env.THROTTLE_LIMIT || "10", 10),
     },
     google: {

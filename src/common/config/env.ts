@@ -26,7 +26,7 @@ export const envSchema = z.object({
     LINKEDIN_CLIENT_SECRET: z.string().min(1),
     LINKEDIN_CALLBACK_URL: z.url(),
 
-    THROTTLE_TTL: z.coerce.number().default(60),
+    THROTTLE_TTL: z.coerce.number().default(60000),
     THROTTLE_LIMIT: z.coerce.number().default(10),
 });
 
