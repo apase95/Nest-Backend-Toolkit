@@ -91,19 +91,21 @@ src
 ---
 
 ## 📌 Design Patterns Used
-- **Repository Pattern**: Abstracting DB operations (BaseRepository) to keep business logic clean
-- **Factory Pattern**: PaymentManager selects the correct payment provider (Stripe/VNPay) at runtime
-- **Strategy Pattern**: IPaymentGateway ensures all payment providers implement the same methods
-- **Decorator Pattern**: @Cacheable for transparent Redis caching
-- **Singleton**: Database connections and Service instances
+- **Dependency Injection (DI)**: The core pattern of NestJS. Services, Repositories, and Helpers are injected into Controllers/Modules, ensuring loose coupling and better testability
+- **Repository Pattern**: Abstraction layer `BaseRepository` over Mongoose models to separate business logic from database queries
+- **Decorator Pattern**: Heavy usage of decorators for Metadata, Routing, and Guards `@Roles()`, `@Get()`, `@UseGuards()`
+- **Strategy Pattern**: Implemented via **Passport** strategies (JWT, Google, LinkedIn, API Key) to handle different authentication mechanisms interchangeably.
+- **Singleton Pattern**: By default, NestJS modules and services are singletons, ensuring efficient memory usage.
+- **DTO (Data Transfer Object)**: Defines the shape of data for incoming requests and outgoing responses, ensuring type safety and validation.
+
 
 ## 🧪 Future Improvements
-- Unit tests (Jest)
-- Integration tests
-- Role-based access control
-- Refresh token flow
-- Message queue (RabbitMQ / Kafka)
-- API documentation (Swagger)
+- **API Documentation**: Integrate **Swagger/OpenAPI** for auto-generated API docs
+- **Real-time Communication**: Implement **WebSockets (Gateway)** for real-time notifications (replacing the current polling mechanism)
+- **Caching**: Integrate **Redis** or In-memory cache for optimizing heavy database queries
+- **Message Queue**: Implement **RabbitMQ** or **BullMQ** for handling background tasks (e.g., sending emails asynchronously)
+- **Microservices**: Refactor modules into standalone microservices using gRPC or TCP.
+- **CI/CD**: Setup GitHub Actions for automated testing and deployment
 
 
 ## ⚙️ Environment Variables
@@ -112,56 +114,38 @@ Create a `.env` file:
 
 ```env
 # --- App Config ---
-PORT=5000
+PORT=3000
 NODE_ENV=development
-CLIENT_URL=http://localhost:3000
-SERVER_URL=http://localhost:5000
+CLIENT_URL=http://localhost:3001
+
+# --- Security & Rate Limit ---
+THROTTLE_TTL=60000
+THROTTLE_LIMIT=10
+API_KEY=your_secure_internal_api_key
 
 # --- Database ---
-MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/your-db
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_PREFIX=express-toolkit:
+MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/your-db?appName=Cluster0
+MONGO_POOL_SIZE=10
 
-# --- Security ---
-API_KEY=your_internal_api_key
-ACCESS_TOKEN_SECRET=your_super_secret_access_key
-REFRESH_TOKEN_SECRET=your_super_secret_refresh_key
-ACCESS_TOKEN_EXPIRES_IN=15m
-REFRESH_TOKEN_EXPIRES_IN=7d
+# --- JWT Config ---
+JWT_ACCESS_SECRET=your_super_secret_access_key
+JWT_REFRESH_SECRET=your_super_secret_refresh_key
+JWT_ACCESS_EXPIRATION=15m
+JWT_REFRESH_EXPIRATION=7d
 
-# --- Cloudinary ---
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# --- OAuth ---
+# --- OAuth 2.0 ---
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=/api/v1/auth/google/callback
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
 LINKEDIN_CLIENT_ID=your_linkedin_client_id
 LINKEDIN_CLIENT_SECRET=your_linkedin_client_secret
-LINKEDIN_CALLBACK_URL=/api/v1/auth/linkedin/callback
+LINKEDIN_CALLBACK_URL=http://localhost:3000/auth/linkedin/callback
 
-# --- Email ---
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-
-# --- Payments ---
-# Stripe
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_API_VERSION=2024-04-10
-
-# VNPay (Sandbox)
-VNP_TMN_CODE=your_tmn_code
-VNP_HASH_SECRET=your_hash_secret
-VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
-VNP_RETURN_URL=http://localhost:5000/api/v1/payments/vnpay-return
+# --- Cloudinary Storage ---
+CLOUDINARY_NAME=your_cloud_name
+CLOUDINARY_KEY=your_api_key
+CLOUDINARY_SECRET=your_api_secret
 ```
 
 ## ▶️ How To Run
@@ -169,17 +153,25 @@ VNP_RETURN_URL=http://localhost:5000/api/v1/payments/vnpay-return
 npm install
 npm run dev
 npm run build
-npm run start
+npm run start:dev
 ```
 
 ## 🐳 Run with Docker
 ```bash
-# Build and start services
-docker-compose up --build
+# Development / Build & Run
+docker-compose up -d --build
 
-# Stop services
+# Check Logs
+docker-compose logs -f api
+
+# Stop Containers
 docker-compose down
 ```
+### Docker Configuration
+- **Dockerfile**: Uses a multi-stage build (Builder -> Runner) based on node:20-alpine for a lightweight and secure production image
+- **docker-compose.yml**: Orchestrates the API service and a local MongoDB container
+  - **API**: Runs on port 3000
+  - **MongoDB**: Exposed on port 27017 (Data persisted in mongo_data volume)
 
 ## 📬 Contact
 - Email: hodtduy.work@gmail.com
