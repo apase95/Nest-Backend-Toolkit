@@ -1,52 +1,45 @@
-# 🚀 Express Backend Toolkit
+# 🚀 Nest Backend Toolkit
 ![NodeJS](https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white)
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
-![Stripe](https://img.shields.io/badge/Stripe-635BFF?style=flat-square&logo=stripe&logoColor=white)
 
-A **production-ready backend boilerplate** built with **Express 5 + TypeScript**, following a **modular & scalable architecture**.  
-Designed for learning, rapid development, and real-world backend systems.
 
-This project focuses on **clean architecture**, **separation of concerns**, and **enterprise-like structure**.
+A **production-ready backend boilerplate** built with **NestJS**, following a **Modular Architecture**.
+Designed for scalability, maintainability, and rapid development of enterprise-grade applications.
+
+This project emphasizes **clean code**, **dependency injection**, and **robust security practices**.
 
 ---
 
 ## ✨ Key Features
 
 ### 🔐 Authentication & Authorization
-- **JWT Authentication**: Access Token & Refresh Token
+- **JWT Authentication**: Access Token & Refresh Token (Cookie-based & Rotation)
 - **OAuth 2.0**: Login with **Google** & **LinkedIn**
-- **Security**: Password hashing, Helmet, CORS, Rate Limiting
-- **Verification**: Email verification & Secure Password Reset flow
-- **RBAC**: Role-based access control (User/Admin/Moderator)
+- **API Key Security**: Machine-to-machine authentication via `x-api-key` header
+- **RBAC**: Role-based access control (User/Admin) with `@Roles()` decorator
+- **Secure Password**: Bcrypt hashing & Password Reset flow via Email
 
-### 💳 Payment System
-- **Unified Payment Interface**: Strategy Pattern to switch between providers easily
-- **Stripe**: Checkout Sessions & Webhook handling
-- **VNPay**: Integrated domestic payment gateway (Vietnam)
-- **Transaction Tracking**: Full audit log of payment statuses
-- **Idempotency**: Prevents duplicate processing of webhooks
+### 🛡 Advanced Security
+- **HTTP Headers**: Secured with **Helmet** (Content-Security-Policy, XSS Filter, etc.)
+- **HPP Protection**: Prevents HTTP Parameter Pollution attacks
+- **Advanced CORS**: Advanced configuration with dynamic origin whitelist
+- **Rate Limiting**: Built-in protection against brute-force and DDoS using `@nestjs/throttler`
+- **Validation**: Strict Input Validation using `class-validator` & `zod` for Environment Variables
 
-### 📦 Order Management
-- **Order System**: Create, track, and update orders linked with payments
-- **User System**: Profile management, avatar upload, secure phone number updates
-
-### 🛡 Advanced Security (New)
-- **HTTP Headers**: Secured with **Helmet** (Hiding `X-Powered-By`, HSTS, XSS Filter, NoSniff)
-- **Parameter Pollution**: Protected against HPP attacks (ex: `?id=1&id=2`)
-- **Advanced CORS**: Dynamic whitelist origin checking & Credentials support
-- **Rate Limiting**: Built-in protection against brute-force and DDoS
-- **Request Tracing**: **Correlation ID (Trace ID)** attached to every request and log for better debugging
+### 📦 User & Notification System
+- **User Management**: CRUD operations, Profile update, Avatar upload (Cloudinary)
+- **Notification System**: Store and retrieve user notifications with unread count badge support
+- **Session Management**: Secure session tracking stored in MongoDB
 
 ### 🚀 Infrastructure & Performance
-- **Caching**: Redis integration for high-performance data retrieval (@Cacheable decorator)
-- **Health Checks**: `/health` endpoint monitoring DB, Redis, and 3rd-party services
-- **Notifications**: Database-stored notifications system
-- **File Storage**: Cloudinary integration with Multer middleware
-- **Mail Service**: SMTP with reusable templates
-- **Logging**: Centralized logging system
+- **Centralized Config**: Type-safe configuration management using `ConfigService` & `zod`
+- **Structured Logging**: JSON structured logs with **Winston** (RequestId tracing included), ready for ELK/Sentry
+- **Health Checks**: `/health` endpoint for Liveness/Readiness probes (Docker/K8s friendly).
+- **File Storage**: Seamless integration with **Cloudinary** for media assets.
+- **Global Error Handling**: Standardized API Responses and Exception Filters.
 
 ---
 
@@ -54,43 +47,46 @@ This project focuses on **clean architecture**, **separation of concerns**, and 
 
 ```bash
 src
-├── core                # Shared infrastructure
-│   ├── cache           # Redis wrapper & decorators
-│   ├── config          # Zod-validated environment & Security configs
-│   ├── constants       # System constants & Enums
-│   ├── database        # Mongoose connection & BaseRepository
-│   ├── errors          # Custom Error classes & Handler
-│   ├── http            # Standard Response & Pagination tools
-│   ├── logger          # Logger setup
-│   ├── mail            # SMTP Service
-│   ├── middlewares     # AsyncHandler, Auth, Upload, Validate, RateLimit, RequestID
-│   ├── security        # JWT, Hash, Passport strategies
-│   ├── storage         # Cloudinary storage engine
+├── common              # Shared resources across modules
+│   ├── config          # Zod-validated Environment & App Configs
+│   ├── database        # Mongoose setup & Abstract Repository Pattern
+│   ├── decorators      # Custom Decorators (@Roles, etc.)
+│   ├── dto             # Shared DTOs (Pagination, ApiResponse)
+│   ├── exceptions      # Custom Exception Classes & Filters
+│   ├── filters         # Global Exception Filters
+│   ├── guards          # Auth Guards (JWT, API Key, Roles)
+│   ├── interceptors    # Response Transform, Logging, Timeout, RequestID
+│   ├── logger          # Winston Logger Service
+│   ├── pipes           # Validation & ParseID Pipes
+│   ├── security        # Hashing, Passport Strategies (JWT, Google, LinkedIn)
+│   ├── storage         # Cloudinary Service
 │   └── utils           # Helpers (Nanoid, Slug, Sleep)
 │
 ├── modules             # Business Logic Domains
-│   ├── auth            # Login, Register, OAuth, Reset Pass
-│   ├── user            # User CRUD, Profile
-│   ├── order           # Order management
-│   ├── payment         # Stripe/VNPay logic, Webhooks, Transaction Log
-│   ├── notification    # Notification system
-│   └── health          # Health check endpoints
+│   ├── auth            # Login, Register, OAuth, Refresh Token
+│   ├── user            # User Management, Profile
+│   ├── session         # Session Storage Logic
+│   ├── notification    # In-app Notifications
+│   ├── mail            # Email Service
+│   └── health          # Health Check System
 │
-├── app.route.ts        # Main Router Hub
-└── server.ts           # Entry point
+├── app.module.ts       # Root Module
+└── main.ts             # Application Entry Point
 ```
 
 ## 🛠 Tech Stack
+
 |Category|Technologies|
 |:-:|:-:|
-| Core | Node.js, Express 5, TypeScript |
-| Database | MongoDB, Redis |
+| Frameword | NestJS (Express adapter) |
+| Language | Typescript |
+| Database | MongoDB |
 | Auth | JWT, Passport, Bcrypt |
-| Validation | Zod (Schema & Env Validation) |
-| Security | Helmet, HPP, Cors, Express-Rate-Limit |
-| Payments | Stripe SDK, VNPay Integration |
-| Uploads | Multer, Cloudinary |
-| DevOps | Docker, Docker Compose |
+| Validation | Zod (Env), Class-Validator (DTO) |
+| Security | Helmet, HPP, Throttler (Rate Limit) |
+| Logging | Winston (Structured Logging) |
+| Storage | Cloudinary (Multer) |
+| Mailing | Nodemailer |
 
 ---
 
