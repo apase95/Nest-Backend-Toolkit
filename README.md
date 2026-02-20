@@ -37,9 +37,9 @@ This project emphasizes **clean code**, **dependency injection**, and **robust s
 ### 🚀 Infrastructure & Performance
 - **Centralized Config**: Type-safe configuration management using `ConfigService` & `zod`
 - **Structured Logging**: JSON structured logs with **Winston** (RequestId tracing included), ready for ELK/Sentry
-- **Health Checks**: `/health` endpoint for Liveness/Readiness probes (Docker/K8s friendly).
-- **File Storage**: Seamless integration with **Cloudinary** for media assets.
-- **Global Error Handling**: Standardized API Responses and Exception Filters.
+- **Health Checks**: `/health` endpoint for Liveness/Readiness probes (Docker/K8s friendly)
+- **File Storage**: Seamless integration with **Cloudinary** for media assets
+- **Global Error Handling**: Standardized API Responses and Exception Filters
 
 ---
 
@@ -94,9 +94,9 @@ src
 - **Dependency Injection (DI)**: The core pattern of NestJS. Services, Repositories, and Helpers are injected into Controllers/Modules, ensuring loose coupling and better testability
 - **Repository Pattern**: Abstraction layer `BaseRepository` over Mongoose models to separate business logic from database queries
 - **Decorator Pattern**: Heavy usage of decorators for Metadata, Routing, and Guards `@Roles()`, `@Get()`, `@UseGuards()`
-- **Strategy Pattern**: Implemented via **Passport** strategies (JWT, Google, LinkedIn, API Key) to handle different authentication mechanisms interchangeably.
-- **Singleton Pattern**: By default, NestJS modules and services are singletons, ensuring efficient memory usage.
-- **DTO (Data Transfer Object)**: Defines the shape of data for incoming requests and outgoing responses, ensuring type safety and validation.
+- **Strategy Pattern**: Implemented via **Passport** strategies (JWT, Google, LinkedIn, API Key) to handle different authentication mechanisms interchangeably
+- **Singleton Pattern**: By default, NestJS modules and services are singletons, ensuring efficient memory usage
+- **DTO (Data Transfer Object)**: Defines the shape of data for incoming requests and outgoing responses, ensuring type safety and validation
 
 
 ## 🧪 Future Improvements
@@ -104,7 +104,7 @@ src
 - **Real-time Communication**: Implement **WebSockets (Gateway)** for real-time notifications (replacing the current polling mechanism)
 - **Caching**: Integrate **Redis** or In-memory cache for optimizing heavy database queries
 - **Message Queue**: Implement **RabbitMQ** or **BullMQ** for handling background tasks (e.g., sending emails asynchronously)
-- **Microservices**: Refactor modules into standalone microservices using gRPC or TCP.
+- **Microservices**: Refactor modules into standalone microservices using gRPC or TCP
 - **CI/CD**: Setup GitHub Actions for automated testing and deployment
 
 
@@ -179,4 +179,4 @@ docker-compose down
 
 ---
 ### Thank you for checking this project!
-Happy coding 💻
+Happy coding! 💻
