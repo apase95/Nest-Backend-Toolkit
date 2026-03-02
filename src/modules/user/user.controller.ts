@@ -8,8 +8,11 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { CloudinaryService } from "src/common/storage";
 import { ApiResponse, PaginationDto } from "src/common/dto";
 import { ParseIdPipe } from "src/common/pipes";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
 
 
+@ApiTags("Users")
+@ApiBearerAuth("access-token")
 @Controller("user")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
@@ -18,30 +21,47 @@ export class UserController {
         private readonly cloudinaryService: CloudinaryService
     ) {}
 
+    @ApiOperation({ summary: "Get current user profile" })
     @Get("me")
     async getMe(@Req() req: any) {
         const user = await this.userService.findByIdWithoutPassword(req.user.userId);
         return ApiResponse.success(user, "Profile fetched successfully");
     };
 
+    @ApiOperation({ summary: "Update user profile" })
     @Put("me")
     async updateUserProfile(@Req() req: any, @Body() dto: UpdateProfileDto) {
         const user = await this.userService.updateUserProfile(req.user.userId, dto);
         return ApiResponse.success(user, "Profile updated successfully");
     };
 
+    @ApiOperation({ summary: "Change phone number" })
     @Patch("me/phone")
     async changePhone(@Req() req: any, @Body() dto: ChangePhoneDto) {
         const user = await this.userService.changePhone(req.user.userId, dto);
         return ApiResponse.success(user, "Phone number updated successfully");
     };
 
+    @ApiOperation({ summary: "Change password" })
     @Patch("me/password")
     async changePassword(@Req() req: any, @Body() dto: ChangePasswordDto) {
         const user = await this.userService.changePassword(req.user.userId, dto);
         return ApiResponse.success(null, "Password updated successfully");
     };
 
+    @ApiOperation({ summary: "Upload user avatar" })
+    @ApiConsumes("multipart/form-data")
+    @ApiBody({
+        schema: {
+            type: "object",
+            properties: {
+                avatar: {
+                    type: "string",
+                    format: "binary",
+                },
+            },
+        },
+    })
     @Put("me/avatar")
     @UseInterceptors(FileInterceptor("avatar"))
     async updateAvatar(
@@ -58,6 +78,7 @@ export class UserController {
         );
     };
 
+    @ApiOperation({ summary: "Get list of users (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Get()
     async getUsers(@Query() query: PaginationDto) {
@@ -70,6 +91,7 @@ export class UserController {
         );
     };
 
+    @ApiOperation({ summary: "Get user by ID (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Get(":id")
     async getUserById(@Param("id", ParseIdPipe) id: string) {
@@ -77,6 +99,7 @@ export class UserController {
         return ApiResponse.success(user, "User fetched successfully");
     };
     
+    @ApiOperation({ summary: "Create new user (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Post()
     async createUser(@Body() dto: CreateUserDto) {
@@ -84,6 +107,7 @@ export class UserController {
         return ApiResponse.created(user, "User created successfully");
     };
 
+    @ApiOperation({ summary: "Delete user (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Delete(":id")
     async deleteUser(@Req() req: any, @Param("id", ParseIdPipe) id: string) {
@@ -91,6 +115,7 @@ export class UserController {
         return ApiResponse.success(null, "User deleted successfully");
     };
 
+    @ApiOperation({ summary: "Lock/Unlock user (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Patch(":id/lock")
     async toggleUserLock(@Req() req: any, @Param("id", ParseIdPipe) id: string) {
@@ -98,6 +123,7 @@ export class UserController {
         return ApiResponse.success(result, "User lock status updated");
     };
 
+    @ApiOperation({ summary: "Change user role (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Patch(":id/role")
     async changeUserRole(@Req() req: any, @Param("id", ParseIdPipe) id: string, @Body() dto: ChangeRoleDto) {
@@ -105,6 +131,7 @@ export class UserController {
         return ApiResponse.success(result, "User role updated successfully");
     };
 
+    @ApiOperation({ summary: "Reset user password (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Patch(":id/reset-password")
     async adminResetPassword(@Param("id", ParseIdPipe) id: string, @Body() dto: AdminResetPasswordDto) {
