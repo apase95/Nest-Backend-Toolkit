@@ -2,7 +2,7 @@ import { Injectable, LoggerService, Scope } from "@nestjs/common";
 import { createLogger, format, transports, Logger as WinstonLogger } from "winston";
 import { ConfigService } from "@nestjs/config";
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export class AppLogger implements LoggerService {
     private logger: WinstonLogger;
 

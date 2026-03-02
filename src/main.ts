@@ -17,6 +17,8 @@ async function bootstrap() {
     const logger = app.get(AppLogger);
     app.useLogger(logger);
 
+    // app.use(helmet());
+
     app.use(
         helmet({
             contentSecurityPolicy: {
@@ -76,11 +78,16 @@ async function bootstrap() {
                 persistAuthorization: true,
             },
         });
-        logger.log(`Swagger is running on: ${await app.getUrl()}/api/docs`, "Bootstrap");
     }
 
     const port = configService.get<number>("PORT") || 3000;
     await app.listen(port);
-    logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
+    // logger.log(`Application is running on: ${await app.getUrl()}`, "Bootstrap");
+
+    const appUrl = await app.getUrl();
+    logger.log(`Application is running on: ${appUrl}`, "Bootstrap");
+    if (configService.get("NODE_ENV") !== "production") {
+        logger.log(`Swagger is running on: ${appUrl}/api/docs`, "Bootstrap");
+    }
 }
 bootstrap();

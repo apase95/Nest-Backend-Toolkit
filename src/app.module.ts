@@ -11,6 +11,7 @@ import { SecurityModule } from "src/common/security";
 import { cloudinaryConfig, databaseConfig, securityConfig, validate } from "src/common/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
+import { LoggerModule } from "src/common/logger";
 
 
 @Module({
@@ -35,6 +36,7 @@ import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
         DatabaseModule,
         SecurityModule,
         StorageModule,
+        LoggerModule,
 
         AuthModule,
         UserModule,
