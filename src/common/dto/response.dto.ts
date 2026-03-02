@@ -1,8 +1,16 @@
+import { ApiProperty } from "@nestjs/swagger";
+
+
 export class MetaData {
+    @ApiProperty()
     total: number;
+    @ApiProperty()
     page: number;
+    @ApiProperty()
     limit: number;
+    @ApiProperty()
     totalPages: number;
+    @ApiProperty({ required: false })
     hasMore?: boolean;
 
     constructor(total: number, page: number, limit: number) {
@@ -27,11 +35,17 @@ export class MetaData {
 };
 
 export class ApiResponse<T> {
+    @ApiProperty()
     success: boolean;
+    @ApiProperty()
     statusCode: number;
+    @ApiProperty()
     message: string;
+    @ApiProperty({ required: false })
     data?: T | null;
+    @ApiProperty({ required: false, type: MetaData })
     meta?: MetaData;
+    @ApiProperty()
     timestamp: string;
 
     constructor(statusCode: number, message: string, data?: T, meta?: MetaData) {
