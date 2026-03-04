@@ -43,6 +43,10 @@ This project emphasizes **clean code**, **dependency injection**, and **robust s
 
 ---
 
+<img width="1432" height="676" alt="image" src="https://github.com/user-attachments/assets/7c9197e3-5a10-429f-bc91-9ca6077f4761" />
+<img width="1433" height="728" alt="image" src="https://github.com/user-attachments/assets/ac7a83a3-705f-432f-9c08-6e34ad9043dc" />
+<img width="1434" height="556" alt="image" src="https://github.com/user-attachments/assets/b2f6f6ec-c97c-40a8-b7c7-7e4fa6fc90ea" />
+
 ## 🧱 Module-Based Architecture
 
 ```bash
