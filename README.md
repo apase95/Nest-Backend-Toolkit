@@ -4,6 +4,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
+![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=white)
 
 
 A **production-ready backend boilerplate** built with **NestJS**, following a **Modular Architecture**.
@@ -42,7 +43,7 @@ This project emphasizes **clean code**, **dependency injection**, and **robust s
 - **Global Error Handling**: Standardized API Responses and Exception Filters
 
 ---
-
+## 📦 Swagger
 <img width="1432" height="676" alt="image" src="https://github.com/user-attachments/assets/7c9197e3-5a10-429f-bc91-9ca6077f4761" />
 <img width="1433" height="728" alt="image" src="https://github.com/user-attachments/assets/ac7a83a3-705f-432f-9c08-6e34ad9043dc" />
 <img width="1434" height="556" alt="image" src="https://github.com/user-attachments/assets/b2f6f6ec-c97c-40a8-b7c7-7e4fa6fc90ea" />
