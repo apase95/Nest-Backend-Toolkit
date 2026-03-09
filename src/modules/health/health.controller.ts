@@ -20,14 +20,17 @@ export class HealthController {
     @Get("status")
     async checkFullStatus(@Res() res: Response) {
         const isDbConnected = await this.healthService.checkDatabase();
+        const isRedisConnected = await this.healthService.checkRedis();
         const systemHealth = this.healthService.getSystemHealth();
 
-        if (isDbConnected) {
+        const isHealthy = isDbConnected && isRedisConnected;
+        if (isHealthy) {
             return res.status(HttpStatus.OK).json(
                 ApiResponse.success(
                     {
                         status: "UP",
                         database: "CONNECTED",
+                        redis: "CONNECTED",
                         system: systemHealth,
                     }, 
                     "System operational"

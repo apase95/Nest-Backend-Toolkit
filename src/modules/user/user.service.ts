@@ -7,18 +7,30 @@ import { UserDocument, UserRole } from "./schemas/user.schema";
 import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
 import { MetaData, PaginationDto } from "src/common/dto";
 import * as bcrypt from "bcrypt";
+import { RedisService } from 'src/common/redis/redis.service';
 
 
 @Injectable()
 export class UserService {
-    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>){}
+    constructor(
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        private readonly redisService: RedisService,
+    ){}
+
+    private async clearUserCache(userId?: string) {
+        if (userId) await this.redisService.del(`user:profile:${userId}`);
+        await this.redisService.delByPattern("users:list:");
+    }
 
     async create(
         dto: CreateUserDto,
     ): Promise<UserDocument> {
         const existingUser = await this.userModel.findOne({ email: dto.email });
         if (existingUser) throw new BadRequestException("Email already exists");
-        return this.userModel.create(dto);
+
+        const user = await this.userModel.create(dto);
+        await this.clearUserCache();
+        return user;
     };
 
     async findByEmail(
@@ -39,12 +51,18 @@ export class UserService {
     };
 
     async findByIdWithoutPassword(id: string): Promise<any> {
+        const cacheKey = `user:profile:${id}`;
+        const cachedUser = await this.redisService.get(cacheKey);
+        if (cachedUser) return cachedUser;
+
         const user = await this.userModel
             .findById(id)
             .where({ isDeleted: false })
             .select("-password")
             .lean();
         if (!user) throw new NotFoundException(`User not found ${id}`);
+
+        await this.redisService.set(cacheKey, user, 900);
         return user;
     };
 
@@ -62,6 +80,8 @@ export class UserService {
             .findByIdAndUpdate(userId, dto, { new: true })
             .where({ isDeleted: false });
         if (!updatedUser) throw new NotFoundException("User not found");
+
+        await this.clearUserCache(userId);
         return updatedUser;
     };
 
@@ -73,6 +93,8 @@ export class UserService {
             .findByIdAndUpdate(userId, { phoneNumber: dto.phoneNumber }, { new: true })
             .where({ isDeleted: false });
         if (!updatedUser) throw new NotFoundException("User not found");
+
+        await this.clearUserCache(userId);
         return updatedUser;
     };
 
@@ -89,10 +111,16 @@ export class UserService {
 
         user.password = dto.newPassword;
         await user.save();
+        await this.clearUserCache(userId);
     };
 
     async findAllUsers(query: PaginationDto) {
         const { page = 1, limit = 10, search } = query;
+        const cacheKey = `users:list:p${page}:l${limit}:s${search || 'none'}`;
+
+        const cachedResult = await this.redisService.get(cacheKey);
+        if (cachedResult) return cachedResult;
+
         const skip = (page - 1) * limit;
         const filter: any = { isDeleted: false };
         
@@ -113,11 +141,10 @@ export class UserService {
         ]);
 
         const meta = new MetaData(total, page, limit);
+        const result = { data: users, meta: meta };
 
-        return {
-            data: users,
-            meta: meta,
-        };
+        await this.redisService.set(cacheKey, result, 300);
+        return result;
     };
 
     async deleteUser(
@@ -130,6 +157,7 @@ export class UserService {
 
         user.isDeleted = true;
         await user.save();
+        await this.clearUserCache(userId); 
     };
 
     async toggleUserLock(
@@ -142,6 +170,7 @@ export class UserService {
 
         user.isLocked = !user.isLocked;
         await user.save();
+        await this.clearUserCache(userId); 
         return { isLocked: user.isLocked };
     };
 
@@ -156,6 +185,7 @@ export class UserService {
 
         user.role = role;
         await user.save();
+        await this.clearUserCache(userId); 
         return { role: user.role };
     };
 
@@ -168,6 +198,7 @@ export class UserService {
 
         user.password = dto.newPassword;
         await user.save();
+        await this.clearUserCache(userId);
     };
 };
 

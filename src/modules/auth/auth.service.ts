@@ -14,6 +14,7 @@ import { EmailVerification } from "src/modules/auth/schemas/email-verification.s
 import { PasswordReset } from "src/modules/auth/schemas/password-reset.schema";
 import { UserRole } from "src/modules/user/schemas/user.schema";
 import { formatDisplayName, nanoid } from "src/common/utils";
+import { RedisService } from "src/common/redis/redis.service";
 
 
 @Injectable()
@@ -27,6 +28,7 @@ export class AuthService {
         @InjectModel(EmailVerification.name)
         private emailVerificationModel: Model<EmailVerification>,
         @InjectModel(PasswordReset.name) private passwordResetModel: Model<PasswordReset>,
+        private readonly redisService: RedisService,
     ) {}
 
     async register(registerDto: RegisterDto) {
@@ -175,11 +177,14 @@ export class AuthService {
 
         const user = await this.userService.findById(record.userId.toString());
         if (user.isEmailVerified) throw new BadRequestException("Email already verified");
-
         user.isEmailVerified = true;
         
         await user.save();
         await this.emailVerificationModel.deleteOne({ _id: record._id });
+
+        await this.redisService.del(`user:profile:${user._id.toString()}`);
+        await this.redisService.delByPattern("users:list:");
+
         return { message: "Email verified successfully" };
     };
 
@@ -213,11 +218,11 @@ export class AuthService {
 
         const user = await this.userService.findById(record.userId.toString());
         user.password = dto.password;
-
         await user.save();
         await this.passwordResetModel.deleteOne({ _id: record._id });
         await this.sessionService.revokeAllSessions(user._id.toString());
 
+        await this.redisService.del(`user:profile:${user._id.toString()}`);
         return { message: "Password reset successfully" };
     };
 }
