@@ -2,3 +2,4 @@ export * from "./env";
 export { default as databaseConfig } from "./database.config";
 export { default as securityConfig } from "./security.config";
 export { default as cloudinaryConfig } from "./cloudinary.config";
+export { default as redisConfig } from "./redis.config";

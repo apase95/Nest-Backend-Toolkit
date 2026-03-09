@@ -14,6 +14,11 @@ export const envSchema = z.object({
 
     API_KEY: z.string().min(1),
 
+    REDIS_HOST: z.string().default("localhost"),
+    REDIS_PORT: z.coerce.number().default(6379),
+    REDIS_PASSWORD: z.string().optional(),
+    REDIS_PREFIX: z.string().default("app:"),
+
     CLOUDINARY_NAME: z.string().min(1),
     CLOUDINARY_KEY: z.string().min(1),
     CLOUDINARY_SECRET: z.string().min(1),
