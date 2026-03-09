@@ -8,10 +8,11 @@ import { HealthModule } from "src/modules/health/health.module";
 import { DatabaseModule } from "src/common/database/database.module";
 import { StorageModule } from "src/common/storage";
 import { SecurityModule } from "src/common/security";
-import { cloudinaryConfig, databaseConfig, securityConfig, validate } from "src/common/config";
+import { cloudinaryConfig, databaseConfig, redisConfig, securityConfig, validate } from "src/common/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { LoggerModule } from "src/common/logger";
+import { RedisModule } from "src/common/redis";
 
 
 @Module({
@@ -19,7 +20,7 @@ import { LoggerModule } from "src/common/logger";
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: ".env",
-            load: [databaseConfig, securityConfig, cloudinaryConfig],
+            load: [databaseConfig, securityConfig, cloudinaryConfig, redisConfig],
             validate: validate,
         }),
         ThrottlerModule.forRootAsync({
@@ -43,6 +44,7 @@ import { LoggerModule } from "src/common/logger";
         SessionModule,
         NotificationModule,
         HealthModule,
+        RedisModule,
     ],
     controllers: [],
     providers: [
