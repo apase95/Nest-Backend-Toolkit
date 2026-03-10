@@ -105,9 +105,7 @@ src
 
 
 ## 🧪 Future Improvements
-- **API Documentation**: Integrate **Swagger/OpenAPI** for auto-generated API docs
 - **Real-time Communication**: Implement **WebSockets (Gateway)** for real-time notifications (replacing the current polling mechanism)
-- **Caching**: Integrate **Redis** or In-memory cache for optimizing heavy database queries
 - **Message Queue**: Implement **RabbitMQ** or **BullMQ** for handling background tasks (e.g., sending emails asynchronously)
 - **Microservices**: Refactor modules into standalone microservices using gRPC or TCP
 - **CI/CD**: Setup GitHub Actions for automated testing and deployment
