@@ -13,6 +13,7 @@ import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerModule, ThrottlerGuard } from "@nestjs/throttler";
 import { LoggerModule } from "src/common/logger";
 import { RedisModule } from "src/common/redis";
+import { BullModule } from "@nestjs/bullmq";
 
 
 @Module({
@@ -32,6 +33,18 @@ import { RedisModule } from "src/common/redis";
                     limit: config.get<number>("security.rateLimit.limit") || 10,
                 }
             ]),
+        }),
+        BullModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                connection: {
+                    host: configService.get<string>("redis.host"),
+                    port: configService.get<number>("redis.port"),
+                    password: configService.get<string>("redis.password"),
+                },
+                prefix: "bullmq", 
+            }),
         }),
         
         DatabaseModule,
