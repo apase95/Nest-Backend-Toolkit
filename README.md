@@ -106,7 +106,6 @@ src
 
 ## 🧪 Future Improvements
 - **Real-time Communication**: Implement **WebSockets (Gateway)** for real-time notifications (replacing the current polling mechanism)
-- **Message Queue**: Implement **RabbitMQ** or **BullMQ** for handling background tasks (e.g., sending emails asynchronously)
 - **Microservices**: Refactor modules into standalone microservices using gRPC or TCP
 - **CI/CD**: Setup GitHub Actions for automated testing and deployment
 
