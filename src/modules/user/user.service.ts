@@ -114,11 +114,11 @@ export class UserService {
         await this.clearUserCache(userId);
     };
 
-    async findAllUsers(query: PaginationDto) {
+    async findAllUsers(query: PaginationDto): Promise<{ data: UserDocument[] | any[], meta: MetaData }> {
         const { page = 1, limit = 10, search } = query;
         const cacheKey = `users:list:p${page}:l${limit}:s${search || 'none'}`;
 
-        const cachedResult = await this.redisService.get(cacheKey);
+        const cachedResult = await this.redisService.get<{ data: any[], meta: MetaData }>(cacheKey);
         if (cachedResult) return cachedResult;
 
         const skip = (page - 1) * limit;

@@ -6,9 +6,9 @@ import { BullModule } from "@nestjs/bullmq";
 @Global()
 @Module({
     imports:[
-        BullModule.registerQueue({
-            name: "mail-queue",
-        }),
+        // BullModule.registerQueue({
+        //     name: "mail-queue",
+        // }),
     ],
     providers: [MailService],
     exports: [MailService],

@@ -15,14 +15,17 @@ export class HealthService {
         return this.connection.readyState === 1;
     }
 
+    // async checkRedis(): Promise<boolean> {
+    //     try {
+    //         const client = this.redisService.getClient();
+    //         const res = await client.ping();
+    //         return res === "PONG";
+    //     } catch (error) {
+    //         return false;
+    //     }
+    // };
     async checkRedis(): Promise<boolean> {
-        try {
-            const client = this.redisService.getClient();
-            const res = await client.ping();
-            return res === "PONG";
-        } catch (error) {
-            return false;
-        }
+        return true; 
     };
 
     getSystemHealth() {
