@@ -1,5 +1,3 @@
-
-
 const API_URL = "http://localhost:3000";
 
 let accessToken = "";
@@ -85,7 +83,7 @@ async function runTestFlow() {
         res = await fetch(`${API_URL}/auth/refresh-token`, {
             method: "POST",
             headers: { 
-                "Cookie": refreshTokenCookie // Gửi cookie lên
+                "Cookie": refreshTokenCookie
             },
         });
         json = await res.json();
@@ -162,5 +160,4 @@ async function runTestFlow() {
     }
 }
 
-// Chạy hàm test
 runTestFlow();

@@ -18,7 +18,8 @@
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
-        "test:flow": "ts-node test/test-user-flow.ts"
+        "test:flow:user": "ts-node test/test-user-flow.ts",
+        "test:flow:notification": "ts-node test/test-notification-flow.ts"
 	},
 	"dependencies": {
 		"@nestjs/bullmq": "^11.0.4",

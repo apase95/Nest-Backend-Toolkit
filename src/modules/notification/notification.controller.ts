@@ -31,7 +31,13 @@ export class NotificationController {
         @Req() req: any,
         @Query() query: ListNotificationDto
     ){
-        return this.notificationService.getMyNotifications(req.user.userId, query);
+        const result = await this.notificationService.getMyNotifications(req.user.userId, query);
+        return ApiResponse.success(
+            result.data,
+            "Notifications fetched successfully",
+            200,
+            result.meta as any
+        );
     };
 
     @ApiOperation({ summary: "Get count of unread notifications" })
