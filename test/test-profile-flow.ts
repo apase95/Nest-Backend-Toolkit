@@ -20,11 +20,11 @@ async function runProfileFlow() {
 
     try {
         // 1. LOGIN
-        logInfo("1. Testing [POST /auth/login]...");
+        logInfo("1. Testing[POST /auth/login]...");
         let res = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "test@example.com", password: "admin123" }),
+            body: JSON.stringify({ email: "admin@system.com", password: "Admin@123" }),
         });
         let json = await res.json();
         if (!json.success) throw new Error(json.message);
@@ -33,7 +33,7 @@ async function runProfileFlow() {
         logSuccess("Login thành công!");
 
         // 2. UPDATE PROFILE
-        logInfo("\n2. Testing [PUT /user/me]...");
+        logInfo("\n2. Testing[PUT /user/me]...");
         res = await fetch(`${API_URL}/user/me`, {
             method: "PUT",
             headers: { 
@@ -41,8 +41,8 @@ async function runProfileFlow() {
                 "Authorization": `Bearer ${accessToken}`
             },
             body: JSON.stringify({
-                displayName: "Test User Updated",
-                firstName: "Test",
+                displayName: "System Administrator Updated",
+                firstName: "Super",
                 lastName: "Updated"
             }),
         });
@@ -72,25 +72,37 @@ async function runProfileFlow() {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ oldPassword: "admin123", newPassword: "new_admin123" }),
+            body: JSON.stringify({ oldPassword: "Admin@123", newPassword: "new_admin123" }),
         });
         json = await res.json();
         if (!json.success) throw new Error(JSON.stringify(json.errors || json.message));
         logSuccess("Đổi mật khẩu thành công!");
 
-        // 5. REVERT PASSWORD
+        // 5. REVERT PASSWORD 
         logInfo("\n5. Đang khôi phục lại mật khẩu gốc [PATCH /user/me/password]...");
         res = await fetch(`${API_URL}/user/me/password`, {
             method: "PATCH",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${accessToken}` // Vẫn dùng token cũ vì chưa logout
+                "Authorization": `Bearer ${accessToken}`
             },
-            body: JSON.stringify({ oldPassword: "new_admin123", newPassword: "admin123" }),
+            body: JSON.stringify({ oldPassword: "new_admin123", newPassword: "Admin@123" }),
         });
         json = await res.json();
         if (!json.success) throw new Error(JSON.stringify(json.errors || json.message));
         logSuccess("Khôi phục mật khẩu gốc thành công!");
+
+        // 6. LOGOUT ALL
+        logInfo("\n6. Testing [POST /auth/logout-all]...");
+        res = await fetch(`${API_URL}/auth/logout-all`, {
+            method: "POST",
+            headers: { 
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        });
+        json = await res.json();
+        if (!json.success) throw new Error(JSON.stringify(json.errors || json.message));
+        logSuccess("Đăng xuất khỏi tất cả các thiết bị thành công!");
 
         console.log("\n🎉 TOÀN BỘ USER PROFILE FLOW ĐÃ CHẠY THÀNH CÔNG! 🎉\n");
     } catch (error: any) {

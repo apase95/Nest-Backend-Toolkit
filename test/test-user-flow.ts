@@ -43,8 +43,8 @@ async function runTestFlow() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                email: "test@example.com",
-                password: "admin123"
+                email: "admin@system.com", // Dùng admin tự sinh
+                password: "Admin@123"
             }),
         });
         json = await res.json();
@@ -97,9 +97,9 @@ async function runTestFlow() {
         }
 
         // ==========================================
-        // 5. GET ALL USERS (Yêu cầu quyền ADMIN)
+        // 5. GET ALL USERS
         // ==========================================
-        logInfo("\n5. Testing [GET /user?page=1&limit=5]...");
+        logInfo("\n5. Testing[GET /user?page=1&limit=5]...");
         res = await fetch(`${API_URL}/user?page=1&limit=5`, {
             method: "GET",
             headers: { 
@@ -111,13 +111,31 @@ async function runTestFlow() {
         if (json.success) {
             logSuccess(`Lấy danh sách Users thành công! Tổng số: ${json.meta.total}`);
         } else {
-            logError(`Không thể lấy danh sách (Có thể do không phải ADMIN): ${json.message}`);
+            logError(`Không thể lấy danh sách: ${json.message}`);
         }
 
         // ==========================================
-        // 6. GET USER BY ID (Yêu cầu quyền ADMIN)
+        // 6. EXPORT USERS TO CSV
         // ==========================================
-        logInfo(`\n6. Testing [GET /user/${currentUserId}]...`);
+        logInfo("\n6. Testing [GET /user/export]...");
+        res = await fetch(`${API_URL}/user/export`, {
+            method: "GET",
+            headers: { 
+                "Authorization": `Bearer ${accessToken}` 
+            },
+        });
+        const text = await res.text();
+
+        if (res.ok && text.includes("ID") && text.includes("Email")) {
+            logSuccess("Xuất file CSV thành công! Dữ liệu CSV trả về đúng định dạng.");
+        } else {
+            throw new Error(`Export CSV thất bại. HTTP Status: ${res.status}`);
+        }
+
+        // ==========================================
+        // 7. GET USER BY ID 
+        // ==========================================
+        logInfo(`\n7. Testing [GET /user/${currentUserId}]...`);
         res = await fetch(`${API_URL}/user/${currentUserId}`, {
             method: "GET",
             headers: { 
@@ -133,9 +151,9 @@ async function runTestFlow() {
         }
 
         // ==========================================
-        // 7. LOGOUT
+        // 8. LOGOUT
         // ==========================================
-        logInfo("\n7. Testing[POST /auth/logout]...");
+        logInfo("\n8. Testing[POST /auth/logout]...");
         res = await fetch(`${API_URL}/auth/logout`, {
             method: "POST",
             headers: { 

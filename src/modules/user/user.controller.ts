@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { RolesGuard, JwtAuthGuard } from "src/common/guards";
 import { UserService } from "src/modules/user/user.service";
 import { CreateUserDto, UpdateProfileDto, ChangePasswordDto, ChangePhoneDto, ChangeRoleDto, AdminResetPasswordDto } from "./dto";
@@ -9,6 +9,7 @@ import { CloudinaryService } from "src/common/storage";
 import { ApiResponse, PaginationDto } from "src/common/dto";
 import { ParseIdPipe } from "src/common/pipes";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Response } from "express";
 
 
 @ApiTags("Users")
@@ -89,6 +90,17 @@ export class UserController {
             200,
             result.meta,
         );
+    };
+
+    @ApiOperation({ summary: "Export users to CSV file (Admin only)" })
+    @Roles(UserRole.ADMIN)
+    @Get("export")
+    async exportUsers(@Res() res: Response) {
+        const csvData = await this.userService.exportUsersToCsv();
+
+        res.setHeader("Content-Type", "text/csv; charset=utf-8");
+        res.setHeader("Content-Disposition", 'attachment; filename="users_export.csv"');
+        res.status(HttpStatus.OK).send(csvData);
     };
 
     @ApiOperation({ summary: "Get user by ID (Admin only)" })
