@@ -117,6 +117,10 @@ export class AuthService {
         } catch (e) {}
     };
 
+    async logoutAll(userId: string) {
+        await this.sessionService.revokeAllSessions(userId);
+    };
+
     private async generateTokens(user: any, sessionId: string) {
         const payload = { sub: user._id, role: user.role, sessionId };
         const [accessToken, refreshToken] = await Promise.all([

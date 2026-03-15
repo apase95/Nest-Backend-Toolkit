@@ -18,10 +18,10 @@
 		"test:cov": "jest --coverage",
 		"test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
 		"test:e2e": "jest --config ./test/jest-e2e.json",
-        "test:flow:user": "ts-node test/test-user-flow.ts",
-        "test:flow:notification": "ts-node test/test-notification-flow.ts",
-        "test:flow:profile": "ts-node test/test-profile-flow.ts",
-        "test:flow:all": "npm run test:flow:user && npm run test:flow:profile && npm run test:flow:notification"
+		"test:flow:user": "ts-node test/test-user-flow.ts",
+		"test:flow:notification": "ts-node test/test-notification-flow.ts",
+		"test:flow:profile": "ts-node test/test-profile-flow.ts",
+		"test:flow:all": "npm run test:flow:user && npm run test:flow:profile && npm run test:flow:notification"
 	},
 	"dependencies": {
 		"@nestjs/bullmq": "^11.0.4",
@@ -43,6 +43,7 @@
 		"helmet": "^8.1.0",
 		"hpp": "^0.2.3",
 		"ioredis": "^5.10.0",
+		"json2csv": "^6.0.0-alpha.2",
 		"mongoose": "^9.1.6",
 		"ms": "^2.1.3",
 		"multer": "^2.0.2",
@@ -71,6 +72,7 @@
 		"@types/express": "^4.17.25",
 		"@types/hpp": "^0.2.7",
 		"@types/jest": "^30.0.0",
+		"@types/json2csv": "^5.0.7",
 		"@types/mocha": "^10.0.10",
 		"@types/multer": "^2.0.0",
 		"@types/node": "^22.10.7",

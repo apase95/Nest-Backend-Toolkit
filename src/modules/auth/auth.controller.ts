@@ -6,6 +6,7 @@ import { AuthGuard } from "@nestjs/passport";
 import { RegisterDto, LoginDto, VerifyEmailDto, ForgotPasswordDto, ResetPasswordDto } from "./dto";
 import { ApiResponse } from "src/common/dto";
 import { ApiTags, ApiOperation, ApiResponse as SwaggerApiResponse, ApiBody, ApiBearerAuth } from "@nestjs/swagger";
+import { JwtAuthGuard } from "src/common/guards/jwt-auth.guard";
 
 
 @ApiTags("Auth")
@@ -76,6 +77,19 @@ export class AuthController {
         res.clearCookie("refreshToken", { ...this.getCookieOptions(), maxAge: 0 });
         return ApiResponse.success(null, "Logged out successfully");
     }
+
+    @ApiBearerAuth("access-token")
+    @ApiOperation({ summary: "Logout from all devices" })
+    @UseGuards(JwtAuthGuard)
+    @Post("logout-all")
+    @HttpCode(HttpStatus.OK)
+    async logoutAll(@Req() req: any, @Res({ passthrough: true }) res: Response) {
+        await this.authService.logoutAll(req.user.userId);
+        
+        res.clearCookie("refreshToken", { ...this.getCookieOptions(), maxAge: 0 });
+        return ApiResponse.success(null, "Logged out from all devices successfully");
+    }
+
 
     @ApiOperation({ summary: "Verify email using token" })
     @Post("verify-email")

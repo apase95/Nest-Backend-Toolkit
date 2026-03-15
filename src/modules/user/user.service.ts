@@ -1,6 +1,6 @@
 import { User } from 'src/modules/user/schemas/user.schema';
 import { ChangePasswordDto, ChangePhoneDto, AdminResetPasswordDto, UpdateProfileDto } from './dto/update-user.dto';
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, OnApplicationBootstrap, Logger  } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { UserDocument, UserRole } from "./schemas/user.schema";
@@ -8,19 +8,56 @@ import { CreateUserDto } from "src/modules/user/dto/create-user.dto";
 import { MetaData, PaginationDto } from "src/common/dto";
 import * as bcrypt from "bcrypt";
 import { RedisService } from 'src/common/redis/redis.service';
+import { Parser } from 'json2csv';
 
 
 @Injectable()
 export class UserService {
+    private readonly logger = new Logger(UserService.name);
+    
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
         private readonly redisService: RedisService,
     ){}
 
+    async onApplicationBootstrap() {
+        await this.seedSuperAdmin();
+    };
+
+    private async seedSuperAdmin() {
+        const adminEmail = "admin@system.com";
+        
+        try {
+            const existingAdmin = await this.userModel.findOne({ email: adminEmail });
+
+            if (!existingAdmin) {
+                await this.userModel.create({
+                    email: adminEmail,
+                    password: "Admin@123",
+                    displayName: "System Administrator",
+                    firstName: "Super",
+                    lastName: "Admin",
+                    role: UserRole.ADMIN,
+                    isEmailVerified: true,
+                });
+                
+                this.logger.log(`🌱 Initialized default account: ${adminEmail}`);
+            } else {
+                this.logger.log(`✔️ Default account[${adminEmail}] already exists.`);
+            }
+        } catch (error: any) {
+            if (error.code === 11000) {
+                this.logger.log(`Default account [${adminEmail}] has been created by another instance.`);
+            } else {
+                this.logger.error(`Error occurred while initializing default account: ${error.message}`);
+            }
+        }
+    };
+
     private async clearUserCache(userId?: string) {
         if (userId) await this.redisService.del(`user:profile:${userId}`);
         await this.redisService.delByPattern("users:list:");
-    }
+    };
 
     async create(
         dto: CreateUserDto,
@@ -199,6 +236,33 @@ export class UserService {
         user.password = dto.newPassword;
         await user.save();
         await this.clearUserCache(userId);
+    };
+
+    async exportUsersToCsv(): Promise<string> {
+        const users = await this.userModel
+            .find({ isDeleted: false })
+            .select("-password")
+            .sort({ createdAt: -1 })
+            .lean()
+            .exec();
+
+        const formattedUsers = users.map(user => ({
+            "ID": user._id.toString(),
+            "Email": user.email,
+            "DisplayName": user.displayName,
+            "FirstName": user.firstName || "",
+            "LastName": user.lastName || "",
+            "PhoneNumber": user.phoneNumber || "N/A",
+            "Role": user.role.toUpperCase(),
+            "IsEmailVerified": user.isEmailVerified ? "Yes" : "No",
+            "IsLocked": user.isLocked ? "Locked" : "Active",
+            "CreatedAt": user.createdAt?.toISOString(),
+        }));
+
+        const parser = new Parser();
+        const csv = parser.parse(formattedUsers);
+
+        return csv;
     };
 };
 

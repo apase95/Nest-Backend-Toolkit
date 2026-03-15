@@ -63,6 +63,9 @@ export enum UserRole {
 
     @Prop({ type: String, enum: UserRole, default: UserRole.USER })
     role!: UserRole;
+
+    @Prop({ type: Date, default: Date.now })
+    createdAt!: Date;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 
