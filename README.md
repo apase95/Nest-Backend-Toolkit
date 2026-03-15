@@ -3,6 +3,7 @@
 ![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat-square&logo=nestjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=flat-square&logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=swagger&logoColor=white)
 
@@ -29,6 +30,7 @@ This project emphasizes **clean code**, **dependency injection**, and **robust s
 - **Advanced CORS**: Advanced configuration with dynamic origin whitelist
 - **Rate Limiting**: Built-in protection against brute-force and DDoS using `@nestjs/throttler`
 - **Validation**: Strict Input Validation using `class-validator` & `zod` for Environment Variables
+- **Audit Logging**: Interceptor-based tracking of all data modifications (Who, What, When, IP)
 
 ### 📦 User & Notification System
 - **User Management**: CRUD operations, Profile update, Avatar upload (Cloudinary)
@@ -36,6 +38,8 @@ This project emphasizes **clean code**, **dependency injection**, and **robust s
 - **Session Management**: Secure session tracking stored in MongoDB
 
 ### 🚀 Infrastructure & Performance
+- **Caching**: **Redis** integration (Cache-Aside pattern) for high-performance data retrieval
+- **Background Tasks**: Asynchronous job processing (e.g., sending emails) using **BullMQ** and Redis Queue
 - **Centralized Config**: Type-safe configuration management using `ConfigService` & `zod`
 - **Structured Logging**: JSON structured logs with **Winston** (RequestId tracing included), ready for ELK/Sentry
 - **Health Checks**: `/health` endpoint for Liveness/Readiness probes (Docker/K8s friendly)
@@ -83,7 +87,7 @@ src
 
 |Category|Technologies|
 |:-:|:-:|
-| Frameword | NestJS (Express adapter) |
+| Framework | NestJS (Express adapter) |
 | Language | Typescript |
 | Database | MongoDB |
 | Auth | JWT, Passport, Bcrypt |
@@ -128,6 +132,12 @@ API_KEY=your_secure_internal_api_key
 # --- Database ---
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/your-db?appName=Cluster0
 MONGO_POOL_SIZE=10
+
+# --- Cache & Queue (Redis) ---
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your_redis_password
+REDIS_PREFIX=nest_toolkit:
 
 # --- JWT Config ---
 JWT_ACCESS_SECRET=your_super_secret_access_key
@@ -174,6 +184,7 @@ docker-compose down
 - **docker-compose.yml**: Orchestrates the API service and a local MongoDB container
   - **API**: Runs on port 3000
   - **MongoDB**: Exposed on port 27017 (Data persisted in mongo_data volume)
+  - **Redis**: Exposed on port 6379 (Data persisted in redis_data volume, secured with password).
 
 ## 📬 Contact
 - Email: hodtduy.work@gmail.com
