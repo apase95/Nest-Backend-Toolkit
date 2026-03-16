@@ -79,19 +79,6 @@ export class UserController {
         );
     };
 
-    @ApiOperation({ summary: "Get list of users (Admin only)" })
-    @Roles(UserRole.ADMIN)
-    @Get()
-    async getUsers(@Query() query: PaginationDto) {
-        const result = await this.userService.findAllUsers(query);
-        return ApiResponse.success(
-            result.data,
-            "List users fetched successfully",
-            200,
-            result.meta,
-        );
-    };
-
     @ApiOperation({ summary: "Get user statistics for Admin Dashboard" })
     @Roles(UserRole.ADMIN)
     @Get("stats")
@@ -109,6 +96,19 @@ export class UserController {
         res.setHeader("Content-Type", "text/csv; charset=utf-8");
         res.setHeader("Content-Disposition", 'attachment; filename="users_export.csv"');
         res.status(HttpStatus.OK).send(csvData);
+    };
+
+    @ApiOperation({ summary: "Get list of users (Admin only)" })
+    @Roles(UserRole.ADMIN)
+    @Get()
+    async getUsers(@Query() query: PaginationDto) {
+        const result = await this.userService.findAllUsers(query);
+        return ApiResponse.success(
+            result.data,
+            "List users fetched successfully",
+            200,
+            result.meta,
+        );
     };
 
     @ApiOperation({ summary: "Get user by ID (Admin only)" })
@@ -157,5 +157,13 @@ export class UserController {
     async adminResetPassword(@Param("id", ParseIdPipe) id: string, @Body() dto: AdminResetPasswordDto) {
         await this.userService.adminResetPassword(id, dto);
         return ApiResponse.success(null, "User password reset successfully");
+    };
+
+    @ApiOperation({ summary: "Restore a soft-deleted user (Admin only)" })
+    @Roles(UserRole.ADMIN)
+    @Patch(":id/restore")
+    async restoreUser(@Req() req: any, @Param("id", ParseIdPipe) id: string) {
+        await this.userService.restoreUser(req.user.userId, id);
+        return ApiResponse.success(null, "User restored successfully");
     };
 };

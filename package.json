@@ -21,8 +21,9 @@
 		"test:flow:user": "ts-node test/test-user-flow.ts",
 		"test:flow:notification": "ts-node test/test-notification-flow.ts",
 		"test:flow:profile": "ts-node test/test-profile-flow.ts",
-		"test:flow:all": "npm run test:flow:user && npm run test:flow:profile && npm run test:flow:notification"
-	},
+        "test:flow:rbac": "ts-node test/test-rbac-flow.ts",
+        "test:flow:all": "npm run test:flow:user && npm run test:flow:profile && npm run test:flow:notification && npm run test:flow:rbac"
+    },
 	"dependencies": {
 		"@nestjs/bullmq": "^11.0.4",
 		"@nestjs/common": "^11.0.1",
