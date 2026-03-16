@@ -148,12 +148,16 @@ export class AuthService {
             ipAddress,
             sessionId,
         );
+
+        await this.userService.updateLastLogin(user._id.toString());
+
         return {
             user: {
                 _id: user._id,
                 email: user.email,
                 displayName: user.displayName,
                 role: user.role,
+                lastLoginAt: new Date(),
             },
             ...tokens,
         };

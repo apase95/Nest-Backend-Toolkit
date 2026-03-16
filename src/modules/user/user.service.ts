@@ -264,5 +264,36 @@ export class UserService {
 
         return csv;
     };
+
+    async updateLastLogin(userId: string): Promise<void> {
+        await this.userModel.findByIdAndUpdate(userId, { lastLoginAt: new Date() }).exec();
+    };
+
+    async getUserStats() {
+        const cacheKey = "users:dashboard_stats";
+        const cachedStats = await this.redisService.get(cacheKey);
+        if (cachedStats) return cachedStats;
+
+        const [total, verified, locked, deleted] = await Promise.all([
+            this.userModel.countDocuments({ isDeleted: false }),
+            this.userModel.countDocuments({ isDeleted: false, isEmailVerified: true }),
+            this.userModel.countDocuments({ isDeleted: false, isLocked: true }),
+            this.userModel.countDocuments({ isDeleted: true }),
+        ]);
+
+        const stats = { total, verified, locked, deleted };
+        
+        await this.redisService.set(cacheKey, stats, 600);
+        return stats;
+    };
+
+    async restoreUser(adminId: string, userId: string): Promise<void> {
+        const user = await this.userModel.findById(userId).where({ isDeleted: true });
+        if (!user) throw new NotFoundException("Deleted user not found");
+
+        user.isDeleted = false;
+        await user.save();
+        await this.clearUserCache(userId); 
+    };
 };
 

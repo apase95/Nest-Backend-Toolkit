@@ -92,6 +92,14 @@ export class UserController {
         );
     };
 
+    @ApiOperation({ summary: "Get user statistics for Admin Dashboard" })
+    @Roles(UserRole.ADMIN)
+    @Get("stats")
+    async getUserStats() {
+        const stats = await this.userService.getUserStats();
+        return ApiResponse.success(stats, "User statistics fetched successfully");
+    }
+
     @ApiOperation({ summary: "Export users to CSV file (Admin only)" })
     @Roles(UserRole.ADMIN)
     @Get("export")

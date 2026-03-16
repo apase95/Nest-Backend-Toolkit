@@ -66,6 +66,9 @@ export enum UserRole {
 
     @Prop({ type: Date, default: Date.now })
     createdAt!: Date;
+
+    @Prop({ type: Date })
+    lastLoginAt?: Date;
 }
 export const UserSchema = SchemaFactory.createForClass(User);
 
